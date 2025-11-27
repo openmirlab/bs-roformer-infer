@@ -81,7 +81,7 @@ model.load_state_dict(state_dict)
 
 ## Recommended Model
 
-**BS-RoFormer-SW** (`roformer-model-bs-roformer-sw-by-jarredou`) is the recommended default model for vocal separation. It provides excellent quality and is widely used in production workflows.
+**BS-RoFormer-SW** (`roformer-model-bs-roformer-sw-by-jarredou`) is the recommended default model for audio source separation. It supports **6-stem separation** (vocals, drums, bass, guitar, piano, other) and provides excellent quality for production workflows.
 
 ```python
 from bs_roformer import DEFAULT_MODEL
@@ -94,7 +94,7 @@ print(DEFAULT_MODEL)  # "roformer-model-bs-roformer-sw-by-jarredou"
 
 | Model | Category | Description |
 |-------|----------|-------------|
-| **`roformer-model-bs-roformer-sw-by-jarredou`** | vocals | **Recommended** - BS-RoFormer SW by Jarredou |
+| **`roformer-model-bs-roformer-sw-by-jarredou`** | 6-stem | **Recommended** - BS-RoFormer SW (vocals, drums, bass, guitar, piano, other) |
 | `roformer-model-bs-roformer-vocals-resurrection-by-unwa` | vocals | Vocals Resurrection by unwa |
 | `roformer-model-bs-roformer-vocals-revive-v3e-by-unwa` | vocals | Vocals Revive V3e by unwa |
 | `roformer-model-bs-roformer-instrumental-resurrection-by-unwa` | instrumental | Instrumental Resurrection by unwa |
