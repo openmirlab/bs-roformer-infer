@@ -1,0 +1,76 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "bs-roformer-infer"
+version = "0.1.0"
+description = "Inference-only Band-Split Roformer separation toolkit"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+    { name = "OpenMIRLab", email = "bernie40916@gmail.com" }
+]
+keywords = ["audio", "source-separation", "roformer", "bs-roformer", "pytorch", "inference"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio :: Analysis",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+]
+dependencies = [
+    "torch>=2.0",
+    "numpy>=1.23",
+    "soundfile>=0.12",
+    "ml_collections>=0.1.1",
+    "tqdm>=4.64",
+    "beartype>=0.14",
+    "rotary-embedding-torch>=0.3.5",
+    "einops>=0.6.1",
+    "librosa>=0.9",
+    "PyYAML>=6.0",
+    "requests>=2.31",
+    "hyper-connections>=0.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.5",
+]
+
+[project.urls]
+Homepage = "https://github.com/openmirlab/bs-roformer-infer"
+Documentation = "https://github.com/openmirlab/bs-roformer-infer#readme"
+Repository = "https://github.com/openmirlab/bs-roformer-infer"
+Issues = "https://github.com/openmirlab/bs-roformer-infer/issues"
+
+[project.scripts]
+bs-roformer-infer = "bs_roformer.inference:main"
+bs-roformer-download = "bs_roformer.download:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/bs_roformer"]
+
+[tool.hatch.build]
+include = [
+    "src/bs_roformer/**/*.py",
+    "src/bs_roformer/configs/*.yaml",
+    "src/bs_roformer/data/*.json",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "build>=1.3.0",
+    "pytest>=7.0",
+    "ruff>=0.5",
+    "twine>=6.2.0",
+]

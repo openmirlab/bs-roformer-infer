@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.dist-info/
+dist/
+build/
+.venv/
+.uv/
+uv.lock
+models/
+outputs/

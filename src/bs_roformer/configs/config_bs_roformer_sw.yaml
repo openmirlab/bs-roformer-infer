@@ -1,0 +1,37 @@
+model:
+  dim: 256
+  depth: 12
+  stereo: true
+  num_stems: 6
+  time_transformer_depth: 1
+  freq_transformer_depth: 1
+  num_bands: 60
+  dim_head: 64
+  heads: 8
+  attn_dropout: 0.1
+  ff_dropout: 0.1
+  flash_attn: true
+  dim_freqs_in: 1025
+  sample_rate: 44100
+  stft_n_fft: 2048
+  stft_hop_length: 512
+  stft_win_length: 2048
+  stft_normalized: false
+  mask_estimator_depth: 2
+  multi_stft_resolution_loss_weight: 1.0
+  multi_stft_resolutions_window_sizes: !!python/tuple
+  - 4096
+  - 2048
+  - 1024
+  - 512
+  - 256
+  multi_stft_hop_size: 147
+  multi_stft_normalized: False
+
+training:
+  instruments: ['bass', 'drums', 'other', 'vocals', 'guitar', 'piano']
+  target_instrument: null
+
+inference:
+  num_overlap: 2
+  chunk_size: 588800

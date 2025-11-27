@@ -1,0 +1,64 @@
+{
+  "models": {
+    "roformer-model-bs-roformer-chorus-male-female-by-sucial": {
+      "name": "Roformer Model: BS Roformer | Chorus Male-Female by Sucial",
+      "checkpoint": "model_chorus_bs_roformer_ep_267_sdr_24.1275.ckpt",
+      "config": "config_chorus_male_female_bs_roformer.yaml",
+      "category": "vocals"
+    },
+    "roformer-model-bs-roformer-de-reverb": {
+      "name": "Roformer Model: BS-Roformer-De-Reverb",
+      "checkpoint": "deverb_bs_roformer_8_384dim_10depth.ckpt",
+      "config": "deverb_bs_roformer_8_384dim_10depth_config.yaml",
+      "category": "dereverb"
+    },
+    "roformer-model-bs-roformer-instrumental-resurrection-by-unwa": {
+      "name": "Roformer Model: BS Roformer | Instrumental Resurrection by unwa",
+      "checkpoint": "bs_roformer_instrumental_resurrection_unwa.ckpt",
+      "config": "config_bs_roformer_instrumental_resurrection_unwa.yaml",
+      "category": "instrumental"
+    },
+    "roformer-model-bs-roformer-male-female-by-aufr33": {
+      "name": "Roformer Model: BS Roformer | Male-Female by aufr33",
+      "checkpoint": "bs_roformer_male_female_by_aufr33_sdr_7.2889.ckpt",
+      "config": "config_chorus_male_female_bs_roformer.yaml",
+      "category": "vocals"
+    },
+    "roformer-model-bs-roformer-sw-by-jarredou": {
+      "name": "Roformer Model: BS Roformer SW by jarredou",
+      "checkpoint": "BS-Rofo-SW-Fixed.ckpt",
+      "config": "BS-Rofo-SW-Fixed.yaml",
+      "category": "vocals"
+    },
+    "roformer-model-bs-roformer-vocals-by-gabox": {
+      "name": "Roformer Model: BS Roformer | Vocals by Gabox",
+      "checkpoint": "bs_roformer_vocals_gabox.ckpt",
+      "config": "config_bs_roformer_vocals_gabox.yaml",
+      "category": "vocals"
+    },
+    "roformer-model-bs-roformer-vocals-resurrection-by-unwa": {
+      "name": "Roformer Model: BS Roformer | Vocals Resurrection by unwa",
+      "checkpoint": "bs_roformer_vocals_resurrection_unwa.ckpt",
+      "config": "config_bs_roformer_vocals_resurrection_unwa.yaml",
+      "category": "vocals"
+    },
+    "roformer-model-bs-roformer-vocals-revive-by-unwa": {
+      "name": "Roformer Model: BS Roformer | Vocals Revive by Unwa",
+      "checkpoint": "bs_roformer_vocals_revive_unwa.ckpt",
+      "config": "config_bs_roformer_vocals_revive_unwa.yaml",
+      "category": "vocals"
+    },
+    "roformer-model-bs-roformer-vocals-revive-v2-by-unwa": {
+      "name": "Roformer Model: BS Roformer | Vocals Revive V2 by Unwa",
+      "checkpoint": "bs_roformer_vocals_revive_v2_unwa.ckpt",
+      "config": "config_bs_roformer_vocals_revive_unwa.yaml",
+      "category": "vocals"
+    },
+    "roformer-model-bs-roformer-vocals-revive-v3e-by-unwa": {
+      "name": "Roformer Model: BS Roformer | Vocals Revive V3e by Unwa",
+      "checkpoint": "bs_roformer_vocals_revive_v3e_unwa.ckpt",
+      "config": "config_bs_roformer_vocals_revive_unwa.yaml",
+      "category": "vocals"
+    }
+  }
+}
