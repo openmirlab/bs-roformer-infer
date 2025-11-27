@@ -40,8 +40,8 @@ uv pip install bs-roformer-infer
 # List available models
 bs-roformer-download --list-models
 
-# Download a specific model
-bs-roformer-download --model bs-roformer-viperx-1297
+# Download the recommended model (BS-RoFormer-SW)
+bs-roformer-download --model roformer-model-bs-roformer-sw-by-jarredou
 
 # Download all models
 bs-roformer-download --all --output-dir ./models
@@ -50,9 +50,10 @@ bs-roformer-download --all --output-dir ./models
 ### CLI Inference
 
 ```bash
+# Using the recommended BS-RoFormer-SW model
 bs-roformer-infer \
-  --config_path models/bs-roformer-viperx-1297/model_bs_roformer_ep_317_sdr_12.9755.yaml \
-  --model_path models/bs-roformer-viperx-1297/model_bs_roformer_ep_317_sdr_12.9755.ckpt \
+  --config_path models/roformer-model-bs-roformer-sw-by-jarredou/BS-Rofo-SW-Fixed.yaml \
+  --model_path models/roformer-model-bs-roformer-sw-by-jarredou/BS-Rofo-SW-Fixed.ckpt \
   --input_folder ./songs \
   --store_dir ./outputs
 ```
@@ -64,10 +65,10 @@ from pathlib import Path
 from ml_collections import ConfigDict
 import torch
 import yaml
-from bs_roformer import MODEL_REGISTRY, get_model_from_config
+from bs_roformer import MODEL_REGISTRY, DEFAULT_MODEL, get_model_from_config
 
-# Get model info from registry
-entry = MODEL_REGISTRY.get("bs-roformer-viperx-1297")
+# Use the default recommended model (BS-RoFormer-SW)
+entry = MODEL_REGISTRY.get(DEFAULT_MODEL)
 
 # Load config and model
 config = ConfigDict(yaml.safe_load(open(f"models/{entry.slug}/{entry.config}")))
@@ -78,15 +79,26 @@ model.load_state_dict(state_dict)
 
 ---
 
+## Recommended Model
+
+**BS-RoFormer-SW** (`roformer-model-bs-roformer-sw-by-jarredou`) is the recommended default model for vocal separation. It provides excellent quality and is widely used in production workflows.
+
+```python
+from bs_roformer import DEFAULT_MODEL
+print(DEFAULT_MODEL)  # "roformer-model-bs-roformer-sw-by-jarredou"
+```
+
+---
+
 ## Available Models
 
 | Model | Category | Description |
 |-------|----------|-------------|
-| `bs-roformer-viperx-1297` | vocals | ViperX vocals model (SDR 12.97) |
-| `bs-roformer-viperx-1053` | vocals | ViperX vocals model (SDR 10.53) |
-| `mel-roformer-viperx-1143` | vocals | MelBand RoFormer vocals |
-| `bs-roformer-de-reverb` | other | De-reverberation model |
-| `roformer-model-bs-roformer-sw-by-jarredou` | vocals | BS-RoFormer SW by Jarredou |
+| **`roformer-model-bs-roformer-sw-by-jarredou`** | vocals | **Recommended** - BS-RoFormer SW by Jarredou |
+| `roformer-model-bs-roformer-vocals-resurrection-by-unwa` | vocals | Vocals Resurrection by unwa |
+| `roformer-model-bs-roformer-vocals-revive-v3e-by-unwa` | vocals | Vocals Revive V3e by unwa |
+| `roformer-model-bs-roformer-instrumental-resurrection-by-unwa` | instrumental | Instrumental Resurrection by unwa |
+| `roformer-model-bs-roformer-de-reverb` | dereverb | De-reverberation model |
 | ... | ... | See `--list-models` for full list |
 
 ---

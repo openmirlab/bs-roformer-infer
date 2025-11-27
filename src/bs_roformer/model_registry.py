@@ -92,4 +92,7 @@ class ModelRegistry:
 
 MODEL_REGISTRY = ModelRegistry()
 
-__all__ = ["BSModel", "ModelRegistry", "MODEL_REGISTRY"]
+# Default model - BS-RoFormer-SW is recommended for best vocal separation quality
+DEFAULT_MODEL = "roformer-model-bs-roformer-sw-by-jarredou"
+
+__all__ = ["BSModel", "ModelRegistry", "MODEL_REGISTRY", "DEFAULT_MODEL"]
