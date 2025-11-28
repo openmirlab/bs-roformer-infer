@@ -35,10 +35,8 @@ dependencies = [
     "beartype>=0.14",
     "rotary-embedding-torch>=0.3.5",
     "einops>=0.6.1",
-    "librosa>=0.9",
     "PyYAML>=6.0",
     "requests>=2.31",
-    "hyper-connections>=0.1.0",
 ]
 
 [project.optional-dependencies]
