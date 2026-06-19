@@ -1,8 +1,8 @@
 {
   "checkpoints": {
-    "BS-Rofo-SW-Fixed.ckpt": "https://huggingface.co/jarredou/BS-ROFO-SW-Fixed/resolve/main/BS-Rofo-SW-Fixed.ckpt"
+    "BS-Rofo-SW-Fixed.ckpt": "https://huggingface.co/enerjazzer/BS-ROFO-SW-Fixed/resolve/main/BS-Rofo-SW-Fixed.ckpt"
   },
   "configs": {
-    "BS-Rofo-SW-Fixed.yaml": "https://huggingface.co/jarredou/BS-ROFO-SW-Fixed/resolve/main/BS-Rofo-SW-Fixed.yaml"
+    "BS-Rofo-SW-Fixed.yaml": "https://huggingface.co/enerjazzer/BS-ROFO-SW-Fixed/resolve/main/BS-Rofo-SW-Fixed.yaml"
   }
 }
