@@ -1,11 +1,20 @@
-"""Model registry for BS-Roformer checkpoints."""
+"""Model registry -- checkpoint/config/category metadata for every BS-Roformer variant.
+
+Backed by data/bs_models.json rather than hardcoded Python so new models can be added
+without a code change. `get()` accepts a slug, friendly name, or checkpoint filename
+interchangeably, since callers (the download CLI, this package's `__init__`) rarely
+agree on which key they have handy. `BSModel.default_sources` maps category ->
+expected output stems, since the raw JSON doesn't declare that itself.
+
+Reads: data/bs_models.json
+"""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 import json
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional
+from typing import Dict, List, Optional
 
 _PACKAGE_ROOT = Path(__file__).resolve().parent
 _MODEL_DATA_PATH = _PACKAGE_ROOT / "data" / "bs_models.json"

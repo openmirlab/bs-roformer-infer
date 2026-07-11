@@ -1,3 +1,14 @@
+"""Attend -- attention core with automatic flash/math/mem-efficient backend selection.
+
+Adapted from lucidrains-style attention wrappers: picks PyTorch's SDPA backend based
+on GPU compute capability at construction time (A100 gets flash-only; other CUDA
+devices get math/mem-efficient) rather than letting PyTorch guess per call, and falls
+back to a plain einsum attention path when `flash=False` so behavior matches the
+non-flash checkpoints this package loads. Requires PyTorch >= 2.0 when flash is enabled.
+
+Reads: torch (nn, scaled_dot_product_attention), packaging.version, einops
+"""
+
 from functools import wraps
 from packaging import version
 from collections import namedtuple
@@ -6,7 +17,6 @@ import torch
 from torch import nn, einsum
 import torch.nn.functional as F
 
-from einops import rearrange, reduce
 
 # constants
 
@@ -106,7 +116,7 @@ class Attend(nn.Module):
 
         # similarity
 
-        sim = einsum(f"b h i d, b h j d -> b h i j", q, k) * scale
+        sim = einsum("b h i d, b h j d -> b h i j", q, k) * scale
 
         # attention
 
@@ -115,6 +125,6 @@ class Attend(nn.Module):
 
         # aggregate values
 
-        out = einsum(f"b h i j, b h j d -> b h i d", attn, v)
+        out = einsum("b h i j, b h j d -> b h i d", attn, v)
 
         return out

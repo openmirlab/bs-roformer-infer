@@ -1,15 +1,12 @@
-"""Test that all model configs load correctly and models can be instantiated.
+"""Config-loading + model-instantiation regression tests for every bundled/downloaded config.
 
-This test validates:
-1. All configs can be loaded with yaml.safe_load() (no !!python/tuple issues)
-2. The list-to-tuple conversion in get_model_from_config works
-3. Models can be instantiated without beartype errors
+Guards three things that have broken before: (1) every config loads with
+yaml.safe_load() with no !!python/tuple errors, (2) the list-to-tuple conversion in
+get_model_from_config actually runs, (3) models instantiate without beartype
+errors. Also runnable standalone (`python tests/test_model_configs.py`) for a
+human-readable pass/fail summary outside pytest.
 
-Usage:
-    pytest tests/test_model_configs.py -v
-
-    # Or run directly:
-    python tests/test_model_configs.py
+Reads: bs_roformer.utils.get_model_from_config, ml_collections, yaml
 """
 
 import sys
@@ -116,7 +113,7 @@ def main():
         # Test 1: Load with safe_load
         try:
             config = load_config_safe(config_path)
-            print(f"  [OK] Config loads with safe_load")
+            print("  [OK] Config loads with safe_load")
         except Exception as e:
             print(f"  [FAIL] Failed to load: {e}")
             failed += 1
@@ -126,23 +123,23 @@ def main():
         param = config.model.get("multi_stft_resolutions_window_sizes")
         if param is not None:
             if isinstance(param, list):
-                print(f"  [OK] multi_stft_resolutions_window_sizes is list (will be converted)")
+                print("  [OK] multi_stft_resolutions_window_sizes is list (will be converted)")
             else:
                 print(f"  [WARN] Unexpected type: {type(param).__name__}")
 
         # Test 3: Model instantiation
         if not hasattr(config, "training"):
-            print(f"  [SKIP] Skipped model test (missing 'training' section)")
+            print("  [SKIP] Skipped model test (missing 'training' section)")
             skipped += 1
             continue
 
         try:
             model = get_model_from_config("bs_roformer", config)
             if model is not None:
-                print(f"  [OK] Model instantiated successfully")
+                print("  [OK] Model instantiated successfully")
                 passed += 1
             else:
-                print(f"  [FAIL] Model is None")
+                print("  [FAIL] Model is None")
                 failed += 1
         except Exception as e:
             print(f"  [FAIL] Model instantiation failed: {e}")
