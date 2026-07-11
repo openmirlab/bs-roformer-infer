@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- Declare the missing `packaging` dependency — `attend.py` imports it for the
+  torch version check, but it was never in `pyproject.toml`; clean environments
+  could fail with `ModuleNotFoundError` (#1, thanks @derVedro).
+
 ## [0.1.2] - 2026-07-11
 
 - **Fix**: model weights URL — the jarredou HuggingFace account behind the default
