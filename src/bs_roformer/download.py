@@ -1,5 +1,16 @@
 #!/usr/bin/env python3
-"""Download script for BS-Roformer checkpoints/configs."""
+"""Download BS-Roformer checkpoints/configs -- CLI + override-aware URL resolution.
+
+Third-party HF accounts can vanish without warning: the jarredou account behind the
+original BS-RoFormer-SW checkpoint was deleted (discovered 2026-06), 404ing the
+default model's download URL for every user until 557f791 repointed it. data/overrides.json
+is the patch point for exactly this failure mode -- when a URL starts 404ing, edit
+that file first, before touching this module's code. Resolution precedence per asset:
+overrides.json entry > packaged local file under configs/ (configs only, checked by
+_copy_packaged_config) > DEFAULT_CKPT_BASE_URL / DEFAULT_CONFIG_BASE_URL construction.
+
+Reads: .model_registry (BSModel, MODEL_REGISTRY), data/overrides.json, requests, tqdm
+"""
 
 from __future__ import annotations
 

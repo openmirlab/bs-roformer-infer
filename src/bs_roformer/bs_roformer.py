@@ -1,3 +1,16 @@
+"""BSRoformer -- the Band-Split RoPE Transformer architecture (band-split + axial attention).
+
+Splits the STFT spectrogram into frequency bands (BandSplit), runs alternating
+time-axis and frequency-axis Transformer stacks per layer (axial attention, cheaper
+than full 2D attention over the spectrogram), then reconstructs per-stem masks
+(MaskEstimator) applied back onto the complex STFT before ISTFT. Deliberately does
+NOT use hyper_connections multi-residual-stream wrappers (see the NOTE below) or the
+learned_value_residual_mix feature: existing published checkpoints were trained
+without them, and enabling either would silently break state_dict compatibility.
+
+Reads: .attend.Attend, rotary_embedding_torch.RotaryEmbedding, beartype, einops, torch
+"""
+
 from __future__ import annotations
 from functools import partial
 

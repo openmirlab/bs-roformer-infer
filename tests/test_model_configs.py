@@ -1,15 +1,12 @@
-"""Test that all model configs load correctly and models can be instantiated.
+"""Config-loading + model-instantiation regression tests for every bundled/downloaded config.
 
-This test validates:
-1. All configs can be loaded with yaml.safe_load() (no !!python/tuple issues)
-2. The list-to-tuple conversion in get_model_from_config works
-3. Models can be instantiated without beartype errors
+Guards three things that have broken before: (1) every config loads with
+yaml.safe_load() with no !!python/tuple errors, (2) the list-to-tuple conversion in
+get_model_from_config actually runs, (3) models instantiate without beartype
+errors. Also runnable standalone (`python tests/test_model_configs.py`) for a
+human-readable pass/fail summary outside pytest.
 
-Usage:
-    pytest tests/test_model_configs.py -v
-
-    # Or run directly:
-    python tests/test_model_configs.py
+Reads: bs_roformer.utils.get_model_from_config, ml_collections, yaml
 """
 
 import sys

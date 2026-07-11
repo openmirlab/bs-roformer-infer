@@ -1,3 +1,16 @@
+"""Model construction from config + chunked windowed inference (overlap-add demixing).
+
+get_model_from_config filters a raw training-config dict down to the keys BSRoformer's
+constructor actually accepts (training configs carry extra fields BSRoformer doesn't
+take) and converts list-typed params back to the tuples the type hints require.
+demix_track splits long mixtures into overlapping chunks, applies a linear
+fade-in/out window per chunk to avoid audible seams at chunk boundaries, and
+normalizes the result by the accumulated window weight -- this is what lets
+inference run on audio far longer than a single forward pass could hold in memory.
+
+Reads: .bs_roformer.BSRoformer, torch
+"""
+
 import time
 import numpy as np
 import torch

@@ -1,4 +1,14 @@
-"""CLI entry point for BS-Roformer inference."""
+"""CLI entry point for BS-Roformer inference -- folder-batch separation, chunked overlap-add.
+
+Training configs sometimes embed `!!python/tuple` YAML tags; SafeLoaderWithTuple
+downgrades those to plain lists so `yaml.load` never has to execute an arbitrary
+Python-object constructor, and utils.get_model_from_config converts the needed
+params back to tuples afterward. Falls back to CPU with a warning when CUDA is
+unavailable rather than raising, since inference (unlike training) is still usable,
+just slow.
+
+Reads: .utils (demix_track, get_model_from_config), yaml, ml_collections, torch
+"""
 
 from __future__ import annotations
 

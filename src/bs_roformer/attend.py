@@ -1,3 +1,14 @@
+"""Attend -- attention core with automatic flash/math/mem-efficient backend selection.
+
+Adapted from lucidrains-style attention wrappers: picks PyTorch's SDPA backend based
+on GPU compute capability at construction time (A100 gets flash-only; other CUDA
+devices get math/mem-efficient) rather than letting PyTorch guess per call, and falls
+back to a plain einsum attention path when `flash=False` so behavior matches the
+non-flash checkpoints this package loads. Requires PyTorch >= 2.0 when flash is enabled.
+
+Reads: torch (nn, scaled_dot_product_attention), packaging.version, einops
+"""
+
 from functools import wraps
 from packaging import version
 from collections import namedtuple
