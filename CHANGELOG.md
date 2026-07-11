@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file.
 
+## [Unreleased]
+
+### Removed
+- Google Colab quickstart notebook (`notebooks/quickstart_colab.ipynb`) and
+  the README's Colab badge/section — maintaining a separate notebook
+  environment alongside the PyPI package was more upkeep than the audience
+  justified.
+
 ## [0.1.3] - 2026-07-11
 
 ### Fixed

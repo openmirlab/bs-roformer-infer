@@ -8,7 +8,6 @@ BS-RoFormer-Infer provides a clean, lightweight API for running music source sep
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/bs-roformer-infer)](https://pypi.org/project/bs-roformer-infer/)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/10T_mrUr39pT29knUZ9rKQ9i3P57uwkXW?usp=sharing)
 
 ---
 
@@ -20,14 +19,6 @@ BS-RoFormer-Infer provides a clean, lightweight API for running music source sep
 - **CLI Tools**: `bs-roformer-infer` and `bs-roformer-download` commands
 - **Python API**: Clean programmatic interface
 - **Model Registry**: Easy model discovery with search and category filtering
-
----
-
-## Try it in Colab
-
-No installation needed! Try the demo directly in Google Colab:
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/10T_mrUr39pT29knUZ9rKQ9i3P57uwkXW?usp=sharing)
 
 ---
 
