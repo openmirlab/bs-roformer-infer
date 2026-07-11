@@ -15,7 +15,7 @@ from __future__ import annotations
 from functools import partial
 
 import torch
-from torch import nn, einsum, tensor, Tensor
+from torch import nn, tensor
 from torch.nn import Module, ModuleList
 import torch.nn.functional as F
 

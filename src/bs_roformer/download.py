@@ -132,7 +132,7 @@ def download_file(url: str, output_path: Path, description: str = "Downloading",
                 if output_path.exists():
                     output_path.unlink()  # Remove corrupted file
                 if attempt < max_retries - 1:
-                    print(f"Retrying in 2 seconds...")
+                    print("Retrying in 2 seconds...")
                     time.sleep(2)
                     continue
                 return False
@@ -143,7 +143,7 @@ def download_file(url: str, output_path: Path, description: str = "Downloading",
                 output_path.unlink()  # Remove partial file
             
             if attempt < max_retries - 1:
-                print(f"Retrying in 2 seconds...")
+                print("Retrying in 2 seconds...")
                 time.sleep(2)
             else:
                 print(f"Failed to download {description} after {max_retries} attempts")
