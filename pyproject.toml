@@ -72,3 +72,9 @@ dev-dependencies = [
     "ruff>=0.5",
     "twine>=6.2.0",
 ]
+
+[tool.pytest.ini_options]
+markers = [
+    "network: hits real network endpoints (deselected by default, run with -m network)",
+]
+addopts = "-m 'not network'"
