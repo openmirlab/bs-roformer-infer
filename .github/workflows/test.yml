@@ -1,0 +1,84 @@
+name: Test
+
+# Prior to this workflow, bs-roformer-infer had ZERO push/PR-triggered CI --
+# only publish.yml existed, which builds/tests on a single pinned Python
+# (3.10) at release time. requires-python is >=3.10 with no upper bound and
+# classifiers claim 3.10-3.12, so the gap was "claimed but almost entirely
+# untested" between releases (org-wide audit, 2026-07).
+#
+# Matrix covers 3.10-3.13, all four verified green locally before this
+# workflow was added (27 passed, 19 deselected on every version). The 19
+# deselected tests are marked `network` (real HTTP calls to weight hosts,
+# see pyproject.toml's `addopts = "-m 'not network'"`) so this job never
+# needs network access to go green.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --extra dev --python ${{ matrix.python-version }}
+
+      - name: Run tests
+        run: uv run --python ${{ matrix.python-version }} pytest -v
+
+  build:
+    name: Wheel-from-sdist smoke test
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build package (wheel-from-sdist, org constitution article 7)
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build
+
+      - name: Install wheel into a clean venv and touch public symbols
+        run: |
+          python -m venv /tmp/smoke-venv
+          /tmp/smoke-venv/bin/pip install --upgrade pip
+          /tmp/smoke-venv/bin/pip install dist/*.whl
+          /tmp/smoke-venv/bin/python -c "
+          import bs_roformer
+          from bs_roformer import BSRoformer
+          print('bs_roformer', bs_roformer.__version__, 'imported OK')
+          "
+
+      - name: Confirm the wheel is non-empty and never bundles weights
+        run: |
+          if unzip -l dist/*.whl | grep -qi '\.ckpt$'; then
+            echo "::error::Wheel contains a .ckpt checkpoint file -- weights must never be bundled (org constitution article 4)"
+            exit 1
+          fi
+          count=$(unzip -l dist/*.whl | grep -c '\.py$')
+          if [ "$count" -lt 5 ]; then
+            echo "::error::Wheel looks empty ($count .py files) -- check [tool.hatch.build.targets.wheel] packages"
+            exit 1
+          fi
+          echo "Verified: wheel has $count .py files and no bundled weights"

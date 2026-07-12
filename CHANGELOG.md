@@ -2,7 +2,64 @@
 
 All notable changes to this project are documented in this file.
 
-## [Unreleased]
+## [0.1.4] - 2026-07-12
+
+Weights-UX campaign (org Weights UX contract, constitution art. 4): real
+integrity verification, true auto-download, and a configurable weights folder.
+
+### Added
+- **sha256 verification wired into downloads**: `data/checksums.json` records
+  the known-good sha256 + size for every asset with a live download URL
+  (BS-Rofo-SW-Fixed.ckpt:
+  `24e7d35ee9c64415673d3fd33e06a67cac2c103c5df6267ba1576459c775916e`,
+  699,412,152 bytes — obtained from the Hugging Face LFS pointer and
+  cross-verified against two independently downloaded local copies).
+  `download_file`/`verify_file_integrity` now check it after every download;
+  a mismatch deletes the file and retries instead of keeping a corrupt
+  checkpoint. The previously dead `get_file_hash()` helper is now the actual
+  verification path. Assets without a recorded hash fall back to the old
+  non-empty check and say so.
+- **Auto-download on first use**: `bs-roformer-infer` no longer requires
+  `--model_path`/`--config_path` — when omitted, the registry model selected
+  via the new `--model` flag (default: BS-RoFormer-SW) is resolved from the
+  models directory and downloaded (sha256-verified) if missing, via the new
+  public `ensure_model_assets()` API (also exported from the package root).
+  Explicit paths still win and skip auto-resolution.
+- **Configurable weights folder**: downloads now default to
+  `~/.cache/bs-roformer-infer/` instead of the CWD-relative `./models`.
+  Overridable via the `BS_ROFORMER_MODELS_PATH` env var, the inference CLI's
+  `--models_dir`, the download CLI's `--output-dir`, or the API's
+  `models_dir=` argument. A legacy `./models` directory is still searched as
+  a read fallback so pre-0.1.4 downloads keep working without re-fetching.
+- `tests/test_weights_ux.py`: offline unit tests for the hash-verification
+  wiring (including a fake-response download that must reject a wrong sha256
+  and delete the file) and the models-dir resolution order.
+- **`.github/workflows/test.yml`**: push/PR-triggered CI, closing a gap found
+  in an org-wide audit — the only prior workflow was `publish.yml`, which
+  builds/tests on a single pinned Python (3.10) at release time only, so
+  nothing ran between releases. Matrix covers Python 3.10-3.13 (all four
+  verified locally: 27 passed, 19 deselected — the `network`-marked tests
+  that hit real weight hosts, already excluded by `addopts = "-m 'not
+  network'"`). A `build` job (needs `test`) does the wheel-from-sdist smoke
+  test: `python -m build`, install the wheel into a clean venv, import
+  `bs_roformer` and touch `BSRoformer`, and confirm the wheel bundles no
+  `.ckpt` weight file (constitution art. 7).
+
+### Changed
+- Version is now single-sourced from `src/bs_roformer/__about__.py` via
+  hatch's dynamic version; `pyproject.toml` and `__init__.py` no longer carry
+  duplicate literals.
+- README: weights section rewritten to state the auto-download behavior, the
+  manual download recipe (exact URL + sha256 + target path), and the folder
+  resolution order truthfully. The previous "integrity verification" feature
+  claim described code that never ran; it is now accurate.
+
+### Known issue (documented, not fixed here)
+- Liveness audit 2026-07-12: **8 of the 9 registry models are currently
+  unavailable** — their TRvlvr fallback URLs 404 on both checkpoint and
+  config. Only the default BS-RoFormer-SW model (enerjazzer mirror) is
+  downloadable today; the dead entries therefore have no recorded checksums
+  yet. Finding live mirrors is tracked as follow-up work.
 
 ### Removed
 - Google Colab quickstart notebook (`notebooks/quickstart_colab.ipynb`) and

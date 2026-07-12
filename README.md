@@ -14,8 +14,7 @@ BS-RoFormer-Infer provides a clean, lightweight API for running music source sep
 ## Features
 
 - **Inference Only**: Lightweight package focused on production inference
-- **Auto-Download**: Automatic checkpoint downloads with integrity verification
-- **10+ Pre-trained Models**: Vocals, instrumentals, dereverb, and multi-stem separation
+- **Auto-Download**: the default model is fetched on first use and sha256-verified against recorded checksums
 - **CLI Tools**: `bs-roformer-infer` and `bs-roformer-download` commands
 - **Python API**: Clean programmatic interface
 - **Model Registry**: Easy model discovery with search and category filtering
@@ -34,54 +33,91 @@ pip install bs-roformer-infer
 uv pip install bs-roformer-infer
 ```
 
-### Download Models
+### CLI Inference
+
+```bash
+# First run auto-downloads the recommended BS-RoFormer-SW model (~700 MB,
+# sha256-verified) into ~/.cache/bs-roformer-infer/ -- no separate download step needed
+bs-roformer-infer --input_folder ./songs --store_dir ./outputs
+```
+
+Every WAV inside `input_folder` produces separated stems (vocals, drums, bass, guitar, piano, other) plus `*_instrumental.wav`. Explicit `--config_path`/`--model_path` arguments still work and skip auto-resolution entirely.
+
+### Python API
+
+```python
+from ml_collections import ConfigDict
+import torch
+import yaml
+from bs_roformer import DEFAULT_MODEL, ensure_model_assets, get_model_from_config
+from bs_roformer.inference import SafeLoaderWithTuple
+
+# Resolves local copies, or downloads (sha256-verified) on first use
+ckpt_path, config_path = ensure_model_assets(DEFAULT_MODEL)
+
+with open(config_path) as f:
+    config = ConfigDict(yaml.load(f, Loader=SafeLoaderWithTuple))
+model = get_model_from_config("bs_roformer", config)
+model.load_state_dict(torch.load(ckpt_path, map_location="cpu"))
+```
+
+---
+
+## Model Weights
+
+### Where weights live
+
+Downloads default to `~/.cache/bs-roformer-infer/<model-slug>/`. The location is
+configurable, resolved in this order:
+
+1. Explicit argument: `--models_dir` (inference CLI), `--output-dir` (download CLI), or `ensure_model_assets(..., models_dir=...)` (API)
+2. The `BS_ROFORMER_MODELS_PATH` environment variable
+3. The default `~/.cache/bs-roformer-infer/`
+
+A relative `./models` directory (the pre-0.1.4 default) is still searched as a
+read fallback, so existing downloads keep working without re-fetching.
+
+### Auto-download
+
+When `bs-roformer-infer` runs without `--model_path`/`--config_path`, the
+requested registry model (default: BS-RoFormer-SW) is looked up in the
+directories above and downloaded on first use. Downloads are verified against
+the sha256 checksums recorded in `src/bs_roformer/data/checksums.json`; a
+mismatch deletes the file and retries instead of keeping a corrupt checkpoint.
+
+### Manual download (offline / air-gapped)
+
+The recommended BS-RoFormer-SW model needs one file (its config ships inside
+the package):
+
+| File | URL | sha256 |
+|------|-----|--------|
+| `BS-Rofo-SW-Fixed.ckpt` (699,412,152 bytes) | <https://huggingface.co/enerjazzer/BS-ROFO-SW-Fixed/resolve/main/BS-Rofo-SW-Fixed.ckpt> | `24e7d35ee9c64415673d3fd33e06a67cac2c103c5df6267ba1576459c775916e` |
+
+Place it at
+`~/.cache/bs-roformer-infer/roformer-model-bs-roformer-sw-by-jarredou/BS-Rofo-SW-Fixed.ckpt`
+(or the equivalent path under your `BS_ROFORMER_MODELS_PATH`), and inference
+will pick it up without network access.
+
+### Download CLI (manual path)
 
 ```bash
 # List available models
 bs-roformer-download --list-models
 
-# Download the recommended model (BS-RoFormer-SW)
+# Download the recommended model into the cache dir
 bs-roformer-download --model roformer-model-bs-roformer-sw-by-jarredou
 
-# Download by category
-bs-roformer-download --category vocals --output-dir ./models
-
-# Download all models
-bs-roformer-download --all --output-dir ./models
+# Download into a custom directory
+bs-roformer-download --model roformer-model-bs-roformer-sw-by-jarredou --output-dir ./models
 ```
 
-### CLI Inference
-
-```bash
-# Using the recommended BS-RoFormer-SW model
-bs-roformer-infer \
-  --config_path models/roformer-model-bs-roformer-sw-by-jarredou/BS-Rofo-SW-Fixed.yaml \
-  --model_path models/roformer-model-bs-roformer-sw-by-jarredou/BS-Rofo-SW-Fixed.ckpt \
-  --input_folder ./songs \
-  --store_dir ./outputs
-```
-
-Every WAV inside `input_folder` produces separated stems (vocals, drums, bass, guitar, piano, other) plus `*_instrumental.wav`.
-
-### Python API
-
-```python
-from pathlib import Path
-from ml_collections import ConfigDict
-import torch
-import yaml
-from bs_roformer import MODEL_REGISTRY, DEFAULT_MODEL, get_model_from_config
-from bs_roformer.inference import SafeLoaderWithTuple
-
-# Use the default recommended model (BS-RoFormer-SW)
-entry = MODEL_REGISTRY.get(DEFAULT_MODEL)
-
-# Load config and model
-with open(f"models/{entry.slug}/{entry.config}") as f:
-    config = ConfigDict(yaml.load(f, Loader=SafeLoaderWithTuple))
-model = get_model_from_config("bs_roformer", config)
-model.load_state_dict(torch.load(f"models/{entry.slug}/{entry.checkpoint}", map_location="cpu"))
-```
+> **Note on download availability** (audited 2026-07-12): only the recommended
+> BS-RoFormer-SW model currently has a live download source. The other 8
+> registry entries fall back to the upstream TRvlvr repository, whose files
+> have been removed (404 on both checkpoint and config) -- they cannot be
+> downloaded until a live mirror is found. Run
+> `python tools/check_weights_liveness.py` (needs network) to re-check.
 
 ---
 
@@ -111,6 +147,11 @@ print(DEFAULT_MODEL)  # "roformer-model-bs-roformer-sw-by-jarredou"
 | ... | ... | See `--list-models` for full list |
 
 **Categories**: multi-stem, vocals, instrumental, dereverb
+
+> As of the 2026-07-12 liveness audit, only the recommended
+> `roformer-model-bs-roformer-sw-by-jarredou` model has a live download URL;
+> the remaining registry entries are currently unavailable upstream (see the
+> availability note in [Model Weights](#model-weights)).
 
 ---
 
