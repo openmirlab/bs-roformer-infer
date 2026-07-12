@@ -11,6 +11,56 @@ BS-RoFormer-Infer provides a clean, lightweight API for running music source sep
 
 ---
 
+## Why This Exists
+
+BS-RoFormer (Band-Split RoPE Transformer) is a strong architecture for music
+source separation, introduced by Lu, Wang, Kong, and Hung (2023). The
+reference implementation, [lucidrains/BS-RoFormer](https://github.com/lucidrains/BS-RoFormer),
+provides the model architecture only -- no checkpoint management, no CLI, no
+packaging for downstream use. Trained checkpoints are typically distributed
+through [python-audio-separator](https://github.com/nomadkaraoke/python-audio-separator)
+(which pulls in the full Ultimate Vocal Remover GUI stack) or through
+individual community members' personal Hugging Face/Google Drive accounts --
+hosts that can and do vanish without warning. This project's own history
+includes exactly that: the original `jarredou` Hugging Face account behind
+the default BS-RoFormer-SW checkpoint was deleted (discovered 2026-06), and
+9 of the other 10 registry models' fallback URLs (the dead upstream
+`TRvlvr/model_repo` GitHub repo) were found 404ing in a 2026-07-12 audit.
+
+BS-RoFormer-Infer reprovides the architecture as a clean, pip-installable,
+inference-only package: no training code, no GUI dependency, a versioned
+model registry that can be repointed at a new host by editing one JSON file
+(no code change), and sha256-verified auto-download so a corrupted or
+tampered checkpoint is never silently loaded.
+
+---
+
+## Acknowledgments
+
+This project builds upon the excellent work of several open-source projects:
+
+- **[BS-RoFormer](https://github.com/lucidrains/BS-RoFormer)** by Phil Wang (lucidrains) -- Clean PyTorch implementation of the Band-Split RoPE Transformer architecture
+- **[python-audio-separator](https://github.com/nomadkaraoke/python-audio-separator)** by Andrew Beveridge (nomadkaraoke) -- Pre-trained checkpoints and model configurations
+- **Original Research** -- Wei-Tsung Lu, Ju-Chiang Wang, Qiuqiang Kong, and Yun-Ning Hung for the Band-Split RoPE Transformer paper
+- **[Politrees/UVR_resources](https://huggingface.co/Politrees/UVR_resources)** on Hugging Face -- current mirror host for 9 of the 10 registry checkpoints, after the original TRvlvr source went dead (see [Model Weights](#what-this-project-will-never-bundle))
+- **[anvuew/dereverb_bs_roformer](https://huggingface.co/anvuew/dereverb_bs_roformer)** on Hugging Face -- author-hosted config for the De-Reverb model
+- **[enerjazzer/BS-ROFO-SW-Fixed](https://huggingface.co/enerjazzer/BS-ROFO-SW-Fixed)** on Hugging Face -- current host for the default BS-RoFormer-SW checkpoint, after the original jarredou account was deleted
+
+## Citation
+
+If you use BS-RoFormer-Infer in your research, please cite the original paper:
+
+```bibtex
+@inproceedings{Lu2023MusicSS,
+    title   = {Music Source Separation with Band-Split RoPE Transformer},
+    author  = {Wei-Tsung Lu and Ju-Chiang Wang and Qiuqiang Kong and Yun-Ning Hung},
+    year    = {2023},
+    url     = {https://api.semanticscholar.org/CorpusID:261556702}
+}
+```
+
+---
+
 ## Features
 
 - **Inference Only**: Lightweight package focused on production inference
@@ -19,11 +69,22 @@ BS-RoFormer-Infer provides a clean, lightweight API for running music source sep
 - **Python API**: Clean programmatic interface
 - **Model Registry**: Easy model discovery with search and category filtering
 
+## Scope
+
+**In scope**: inference (forward pass) with the BS-RoFormer architecture; a
+10-model registry spanning multi-stem, vocals, instrumental, and de-reverb
+checkpoints; automatic, manual, and configurable-directory checkpoint
+management with sha256 verification; a standalone download CLI.
+
+**Out of scope, forever**:
+- Training or fine-tuning code -- this package only ever runs a forward pass.
+- The Ultimate Vocal Remover GUI itself, or any GUI.
+- Bundling or committing checkpoint bytes to this repository's git history
+  (see [What This Project Will NEVER Bundle](#what-this-project-will-never-bundle)).
+
 ---
 
-## Quick Start
-
-### Installation
+## Install
 
 ```bash
 # Using pip
@@ -33,7 +94,7 @@ pip install bs-roformer-infer
 uv pip install bs-roformer-infer
 ```
 
-### CLI Inference
+## Quick Start
 
 ```bash
 # First run auto-downloads the recommended BS-RoFormer-SW model (~700 MB,
@@ -43,7 +104,9 @@ bs-roformer-infer --input_folder ./songs --store_dir ./outputs
 
 Every WAV inside `input_folder` produces separated stems (vocals, drums, bass, guitar, piano, other) plus `*_instrumental.wav`. Explicit `--config_path`/`--model_path` arguments still work and skip auto-resolution entirely.
 
-### Python API
+---
+
+## Python API
 
 ```python
 from ml_collections import ConfigDict
@@ -61,9 +124,64 @@ model = get_model_from_config("bs_roformer", config)
 model.load_state_dict(torch.load(ckpt_path, map_location="cpu"))
 ```
 
+## Recommended Model
+
+**BS-RoFormer-SW** (`roformer-model-bs-roformer-sw-by-jarredou`) by jarredou is the recommended default model for audio source separation. It supports **6-stem separation** (vocals, drums, bass, guitar, piano, other) and provides excellent quality for production workflows.
+
+```python
+from bs_roformer import DEFAULT_MODEL
+print(DEFAULT_MODEL)  # "roformer-model-bs-roformer-sw-by-jarredou"
+```
+
+## Available Models
+
+| Model | Category | Description |
+|-------|----------|-------------|
+| **`roformer-model-bs-roformer-sw-by-jarredou`** | multi-stem | **Recommended** - 6-stem separation (vocals, drums, bass, guitar, piano, other) |
+| `roformer-model-bs-roformer-vocals-resurrection-by-unwa` | vocals | Vocals Resurrection by unwa |
+| `roformer-model-bs-roformer-vocals-revive-v3e-by-unwa` | vocals | Vocals Revive V3e by unwa |
+| `roformer-model-bs-roformer-vocals-revive-v2-by-unwa` | vocals | Vocals Revive V2 by unwa |
+| `roformer-model-bs-roformer-vocals-revive-by-unwa` | vocals | Vocals Revive by unwa |
+| `roformer-model-bs-roformer-vocals-by-gabox` | vocals | Vocals by Gabox |
+| `roformer-model-bs-roformer-instrumental-resurrection-by-unwa` | instrumental | Instrumental Resurrection by unwa |
+| `roformer-model-bs-roformer-de-reverb` | dereverb | De-reverberation model |
+| ... | ... | See `--list-models` for full list |
+
+**Categories**: multi-stem, vocals, instrumental, dereverb
+
+> As of the 2026-07-12 re-audit, all registry entries have a live download
+> URL (see the availability note in [What This Project Will NEVER Bundle](#what-this-project-will-never-bundle)).
+
+## Registry Helpers
+
+```python
+from bs_roformer import MODEL_REGISTRY
+
+# List all categories
+print(MODEL_REGISTRY.categories())
+
+# List models by category
+for model in MODEL_REGISTRY.list("vocals"):
+    print(model.name, model.checkpoint)
+
+# Search models
+results = MODEL_REGISTRY.search("unwa")
+for m in results:
+    print(m.slug)
+
+# Pretty-print all models
+print(MODEL_REGISTRY.as_table())
+```
+
 ---
 
-## Model Weights
+## What This Project Will NEVER Bundle
+
+Model weights are **never bundled or committed to this repository**. Every
+checkpoint is downloaded at runtime from its registry-recorded source,
+sha256-verified against `src/bs_roformer/data/checksums.json`, and cached
+locally -- a mismatch deletes the file and retries instead of silently
+keeping a corrupt checkpoint.
 
 ### Where weights live
 
@@ -143,62 +261,7 @@ bs-roformer-download --model roformer-model-bs-roformer-sw-by-jarredou --output-
 
 ---
 
-## Recommended Model
-
-**BS-RoFormer-SW** (`roformer-model-bs-roformer-sw-by-jarredou`) by jarredou is the recommended default model for audio source separation. It supports **6-stem separation** (vocals, drums, bass, guitar, piano, other) and provides excellent quality for production workflows.
-
-```python
-from bs_roformer import DEFAULT_MODEL
-print(DEFAULT_MODEL)  # "roformer-model-bs-roformer-sw-by-jarredou"
-```
-
----
-
-## Available Models
-
-| Model | Category | Description |
-|-------|----------|-------------|
-| **`roformer-model-bs-roformer-sw-by-jarredou`** | multi-stem | **Recommended** - 6-stem separation (vocals, drums, bass, guitar, piano, other) |
-| `roformer-model-bs-roformer-vocals-resurrection-by-unwa` | vocals | Vocals Resurrection by unwa |
-| `roformer-model-bs-roformer-vocals-revive-v3e-by-unwa` | vocals | Vocals Revive V3e by unwa |
-| `roformer-model-bs-roformer-vocals-revive-v2-by-unwa` | vocals | Vocals Revive V2 by unwa |
-| `roformer-model-bs-roformer-vocals-revive-by-unwa` | vocals | Vocals Revive by unwa |
-| `roformer-model-bs-roformer-vocals-by-gabox` | vocals | Vocals by Gabox |
-| `roformer-model-bs-roformer-instrumental-resurrection-by-unwa` | instrumental | Instrumental Resurrection by unwa |
-| `roformer-model-bs-roformer-de-reverb` | dereverb | De-reverberation model |
-| ... | ... | See `--list-models` for full list |
-
-**Categories**: multi-stem, vocals, instrumental, dereverb
-
-> As of the 2026-07-12 re-audit, all registry entries have a live download
-> URL (see the availability note in [Model Weights](#model-weights)).
-
----
-
-## Registry Helpers
-
-```python
-from bs_roformer import MODEL_REGISTRY
-
-# List all categories
-print(MODEL_REGISTRY.categories())
-
-# List models by category
-for model in MODEL_REGISTRY.list("vocals"):
-    print(model.name, model.checkpoint)
-
-# Search models
-results = MODEL_REGISTRY.search("unwa")
-for m in results:
-    print(m.slug)
-
-# Pretty-print all models
-print(MODEL_REGISTRY.as_table())
-```
-
----
-
-## Development Installation
+## Development
 
 ```bash
 # Clone repository
@@ -206,21 +269,16 @@ git clone https://github.com/openmirlab/bs-roformer-infer.git
 cd bs-roformer-infer
 
 # Install with UV
-uv sync
+uv sync --extra dev
 
 # Install with pip
 pip install -e ".[dev]"
 ```
 
----
-
-## Acknowledgments
-
-This project builds upon the excellent work of several open-source projects:
-
-- **[BS-RoFormer](https://github.com/lucidrains/BS-RoFormer)** by Phil Wang (lucidrains) - Clean PyTorch implementation of the Band-Split RoPE Transformer architecture
-- **[python-audio-separator](https://github.com/nomadkaraoke/python-audio-separator)** by Andrew Beveridge (nomadkaraoke) - Pre-trained checkpoints and model configurations
-- **Original Research** - Wei-Tsung Lu, Ju-Chiang Wang, Qiuqiang Kong, and Yun-Ning Hung for the Band-Split RoPE Transformer paper
+```bash
+uv run pytest -q       # unit tests (network-marked tests deselected by default)
+uv run ruff check .    # lint
+```
 
 ---
 
@@ -231,21 +289,6 @@ MIT License - see [LICENSE](LICENSE) for details.
 This project includes code and configurations adapted from:
 - **BS-RoFormer** (MIT) - Phil Wang
 - **python-audio-separator** (MIT) - Andrew Beveridge
-
----
-
-## Citation
-
-If you use BS-RoFormer-Infer in your research, please cite the original paper:
-
-```bibtex
-@inproceedings{Lu2023MusicSS,
-    title   = {Music Source Separation with Band-Split RoPE Transformer},
-    author  = {Wei-Tsung Lu and Ju-Chiang Wang and Qiuqiang Kong and Yun-Ning Hung},
-    year    = {2023},
-    url     = {https://api.semanticscholar.org/CorpusID:261556702}
-}
-```
 
 ---
 
