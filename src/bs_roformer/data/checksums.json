@@ -1,6 +1,6 @@
 {
   "generated": "2026-07-12",
-  "method": "sha256 obtained from Hugging Face LFS pointers (authoritative content-address oids) and cross-verified against two independently downloaded local copies of the checkpoint; the config hash is the sha256 of the raw remote file bytes. Only assets with a live download URL have entries -- the 8 registry models whose TRvlvr fallback URLs are dead (404, audited 2026-07-12) cannot be hashed until a live mirror is found.",
+  "method": "sha256 obtained from Hugging Face LFS pointers (authoritative content-address oids) and cross-verified against two independently downloaded local copies of the checkpoint; the config hash is the sha256 of the raw remote file bytes. All 9 previously-dead TRvlvr fallback entries (404, audited 2026-07-12) were re-hashed against their new live mirrors -- see CHANGELOG for per-model provenance and the de-reverb config-variant trap (Politrees hosts a UVR5-patched stft_hop_length:441 variant under a similar filename; the author anvuew's stft_hop_length:512 config is the correct one and is used here).",
   "files": {
     "BS-Rofo-SW-Fixed.ckpt": {
       "sha256": "24e7d35ee9c64415673d3fd33e06a67cac2c103c5df6267ba1576459c775916e",
@@ -9,6 +9,66 @@
     "BS-Rofo-SW-Fixed.yaml": {
       "sha256": "f9fada9f94e5ba2d2e4600196299459294bc5f532b314c209cc156ac63e4329b",
       "size": 4613
+    },
+    "model_chorus_bs_roformer_ep_267_sdr_24.1275.ckpt": {
+      "sha256": "123c00786bdbc6bd462dddb35cd21fd6ae99ab8319f93f63a8abc1012e593d94",
+      "size": 527121477
+    },
+    "config_chorus_male_female_bs_roformer.yaml": {
+      "sha256": "363ef6bef5f0fd89b69e6e0f90dcc102dec6aaeb6e55790cae1796bebdf5097e",
+      "size": 1847
+    },
+    "deverb_bs_roformer_8_384dim_10depth.ckpt": {
+      "sha256": "9c38653aaa5e49f2f7b84dd3be2b6b679e0cbea23978e6b48389ee6f0a914768",
+      "size": 361499604
+    },
+    "deverb_bs_roformer_8_384dim_10depth_config.yaml": {
+      "sha256": "a87cf93b36b9a20d25a9cc4f78a2541ea0033988e7b6c38dcf0029e9290af816",
+      "size": 2358
+    },
+    "bs_roformer_instrumental_resurrection_unwa.ckpt": {
+      "sha256": "16311025a5133ae6411760ccfe9e3e66b31a01d9d8bec0a03fa7ec4bedac7a15",
+      "size": 204483033
+    },
+    "config_bs_roformer_instrumental_resurrection_unwa.yaml": {
+      "sha256": "0c67e988e1d608a4d3414f602dd3593ec927913c60618d1ff981baec40455cb0",
+      "size": 2632
+    },
+    "bs_roformer_male_female_by_aufr33_sdr_7.2889.ckpt": {
+      "sha256": "3cf11736d1b42a11ae55d8299316585921477dd2a671b24b663660846ca9861b",
+      "size": 527119779
+    },
+    "bs_roformer_vocals_gabox.ckpt": {
+      "sha256": "18d58efe5e949e70fab11b875329af6d06ef11ccc29574bfe943fb57cc827f38",
+      "size": 639254584
+    },
+    "config_bs_roformer_vocals_gabox.yaml": {
+      "sha256": "2bfdd16c656bd9519aba757cc4f8834b7ede675eb1e00ec4772d74ae1c41af7f",
+      "size": 2273
+    },
+    "bs_roformer_vocals_resurrection_unwa.ckpt": {
+      "sha256": "9dbfe5cb572e4ed32a15ec727d7bd06c8d7aba97509e6fda5bc008bb1e0b2dd5",
+      "size": 204510749
+    },
+    "config_bs_roformer_vocals_resurrection_unwa.yaml": {
+      "sha256": "79c65b6158c8e9236c9f02247cbb2fb6eb0007c42c47799e9de8e86f474556c6",
+      "size": 2633
+    },
+    "bs_roformer_vocals_revive_unwa.ckpt": {
+      "sha256": "f1d7e4bfdfef07c6b2bc1d65283a7d03c3c38f8c7dbc8d729b785f93c8b8699a",
+      "size": 639326600
+    },
+    "config_bs_roformer_vocals_revive_unwa.yaml": {
+      "sha256": "6b9d5fb6aeda6b0941f937e4e4883643e3187331ff403fb820c7aa6af4b02dbb",
+      "size": 2382
+    },
+    "bs_roformer_vocals_revive_v2_unwa.ckpt": {
+      "sha256": "58098850c882a7472dad39f99fb8040ce6eaafe671cfe9881d89aea276bbb5f5",
+      "size": 639326600
+    },
+    "bs_roformer_vocals_revive_v3e_unwa.ckpt": {
+      "sha256": "1b0751b9a15c591407c3b77f08eb4ad3005e42e96051f3f2b39760f1130c467b",
+      "size": 639326600
     }
   }
 }

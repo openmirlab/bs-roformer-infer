@@ -6,4 +6,4 @@ __init__.py re-exports it. Bump the version here and nowhere else.
 Reads: nothing (leaf module by design)
 """
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"

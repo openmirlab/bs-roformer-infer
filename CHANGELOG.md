@@ -2,6 +2,114 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.1.5] - 2026-07-12
+
+Re-hosted the 9 registry models whose TRvlvr fallback URLs were dead (404,
+audited 2026-07-12; see #2). All 9 now resolve to live, sha256-cross-verified
+mirrors via `data/overrides.json`, with hashes recorded in
+`data/checksums.json`. Provenance and re-verification method below (constitution
+art. 4: "provenance recorded — where the checkpoint came from, sha256, who
+trained it").
+
+### Fixed
+- **9 dead checkpoint/config URLs re-hosted** (all cross-verified sha256
+  against at least two independently-hosted copies before being written to
+  `overrides.json`):
+  - **BS-Roformer-De-Reverb** (`deverb_bs_roformer_8_384dim_10depth.ckpt`,
+    `9c38653aaa5e49f2f7b84dd3be2b6b679e0cbea23978e6b48389ee6f0a914768`,
+    361,499,604 bytes) — checkpoint from Politrees/UVR_resources, verified
+    byte-identical to the author's anvuew/dereverb_bs_roformer and to
+    Sucial/MSST-WebUI copies.
+    **Config uses the author's file (anvuew/dereverb_bs_roformer,
+    `archive/deverb_bs_roformer_8_384dim_10depth.yaml`,
+    `a87cf93b36b9a20d25a9cc4f78a2541ea0033988e7b6c38dcf0029e9290af816`,
+    2,358 bytes), NOT Politrees' similarly-named
+    `config_bs_roformer_deverb_8_384dim_10depth.yaml`
+    (`57c7d6b6742e2dc64d091892ae6fc1160410b365c39d1db9c9d1f772f3a4d8ce`).
+    The two configs diverge on exactly one load-bearing key: the author's has
+    `stft_hop_length: 512`, Politrees' has `stft_hop_length: 441` (a
+    UVR5-specific patch, not the training-config value this package's
+    inference path needs — `stft_hop_length` is in the model-construction
+    allowlist, so this silently degrades output rather than erroring.
+    **Do not "fix" this back to the Politrees file** — that is the trap, not
+    a typo.**
+  - **Chorus Male-Female by Sucial**
+    (`model_chorus_bs_roformer_ep_267_sdr_24.1275.ckpt`,
+    `123c00786bdbc6bd462dddb35cd21fd6ae99ab8319f93f63a8abc1012e593d94`,
+    527,121,477 bytes) and its config
+    (`config_chorus_male_female_bs_roformer.yaml`,
+    `363ef6bef5f0fd89b69e6e0f90dcc102dec6aaeb6e55790cae1796bebdf5097e`,
+    1,847 bytes) — from Politrees/UVR_resources.
+  - **Instrumental Resurrection by unwa**
+    (`bs_roformer_instrumental_resurrection_unwa.ckpt`,
+    `16311025a5133ae6411760ccfe9e3e66b31a01d9d8bec0a03fa7ec4bedac7a15`,
+    204,483,033 bytes) and its config
+    (`config_bs_roformer_instrumental_resurrection_unwa.yaml`,
+    `0c67e988e1d608a4d3414f602dd3593ec927913c60618d1ff981baec40455cb0`,
+    2,632 bytes) — from Politrees/UVR_resources (hosted there under the
+    filename `model_BandSplit-Roformer_Resurrection_Instrumental_by-Unwa.ckpt`),
+    cross-verified against the pcunwa/BS-Roformer-Resurrection author repo.
+  - **Male-Female by aufr33**
+    (`bs_roformer_male_female_by_aufr33_sdr_7.2889.ckpt`,
+    `3cf11736d1b42a11ae55d8299316585921477dd2a671b24b663660846ca9861b`,
+    527,119,779 bytes) — no author HF account exists for aufr33; from
+    Politrees/UVR_resources, cross-verified byte-identical against
+    Sucial/MSST-WebUI's copy (2-source agreement). Shares the Chorus model's
+    config.
+  - **Vocals by Gabox** (`bs_roformer_vocals_gabox.ckpt`,
+    `18d58efe5e949e70fab11b875329af6d06ef11ccc29574bfe943fb57cc827f38`,
+    639,254,584 bytes) and its config
+    (`config_bs_roformer_vocals_gabox.yaml`,
+    `2bfdd16c656bd9519aba757cc4f8834b7ede675eb1e00ec4772d74ae1c41af7f`,
+    2,273 bytes) — from Politrees/UVR_resources (hosted there as
+    `bs_roformer_voc_gabox.ckpt`), cross-verified against the
+    GaboxR67/BSRoformerVocTest author repo.
+  - **Vocals Resurrection by unwa**
+    (`bs_roformer_vocals_resurrection_unwa.ckpt`,
+    `9dbfe5cb572e4ed32a15ec727d7bd06c8d7aba97509e6fda5bc008bb1e0b2dd5`,
+    204,510,749 bytes) and its config
+    (`config_bs_roformer_vocals_resurrection_unwa.yaml`,
+    `79c65b6158c8e9236c9f02247cbb2fb6eb0007c42c47799e9de8e86f474556c6`,
+    2,633 bytes) — from Politrees/UVR_resources (hosted there as
+    `model_BandSplit-Roformer_Resurrection_Vocals_by-Unwa.ckpt`).
+  - **Vocals Revive by unwa** (`bs_roformer_vocals_revive_unwa.ckpt`,
+    `f1d7e4bfdfef07c6b2bc1d65283a7d03c3c38f8c7dbc8d729b785f93c8b8699a`,
+    639,326,600 bytes) and its config
+    (`config_bs_roformer_vocals_revive_unwa.yaml`,
+    `6b9d5fb6aeda6b0941f937e4e4883643e3187331ff403fb820c7aa6af4b02dbb`,
+    2,382 bytes) — from Politrees/UVR_resources (hosted there as
+    `bs_roformer_revive_by_unwa.ckpt`), cross-verified against the pcunwa
+    author repo (`bs_roformer_revive.ckpt`).
+  - **Vocals Revive V2 by unwa** (`bs_roformer_vocals_revive_v2_unwa.ckpt`,
+    `58098850c882a7472dad39f99fb8040ce6eaafe671cfe9881d89aea276bbb5f5`,
+    639,326,600 bytes) — from Politrees/UVR_resources (hosted there as
+    `bs_roformer_revive_v2_by_unwa.ckpt`). Shares the Revive config.
+  - **Vocals Revive V3e by unwa** (`bs_roformer_vocals_revive_v3e_unwa.ckpt`,
+    `1b0751b9a15c591407c3b77f08eb4ad3005e42e96051f3f2b39760f1130c467b`,
+    639,326,600 bytes) — from Politrees/UVR_resources, hosted there as
+    `bs_roformer_revive_v3_by_unwa.ckpt` **(note the filename drops the "e" —
+    this is the same file, verified byte-identical against the pcunwa author
+    repo's `bs_roformer_revive3e.ckpt`; the missing "e" is a Politrees
+    naming quirk, not a different model)**. Shares the Revive config.
+- **Source-selection policy note** (flagged per constitution art. 8 — a
+  policy-level call, not a quiet bundle): all 9 checkpoints above route
+  through **Politrees/UVR_resources** uniformly rather than each model's
+  original author account. Politrees is the one mirror with a fully
+  enumerated, hash-verified tree covering every affected model; individual
+  author-repo URLs for 7 of the 9 models were not independently re-derived
+  in this pass (only anvuew's de-reverb config and the Politrees/Sucial
+  cross-checks were). This satisfies constitution art. 4's "at minimum a
+  mirror" bar but not its "canonical source is openmirlab's own HF account"
+  ideal — migrating these to an openmirlab-controlled HF mirror remains
+  open work (tracked in #2).
+
+### Verification
+- Re-ran the package's real `download_model_assets()` code path (not a
+  monkeypatch) against the new `overrides.json`/`checksums.json` on disk for
+  the De-Reverb model plus two spot-checks (Chorus Male-Female, Vocals
+  Revive V3e) — all three downloaded and sha256-verified successfully.
+- Full test suite: 27 passed, 19 deselected (unchanged from 0.1.4 baseline).
+
 ## [0.1.4] - 2026-07-12
 
 Weights-UX campaign (org Weights UX contract, constitution art. 4): real
