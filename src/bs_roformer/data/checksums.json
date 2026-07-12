@@ -1,0 +1,14 @@
+{
+  "generated": "2026-07-12",
+  "method": "sha256 obtained from Hugging Face LFS pointers (authoritative content-address oids) and cross-verified against two independently downloaded local copies of the checkpoint; the config hash is the sha256 of the raw remote file bytes. Only assets with a live download URL have entries -- the 8 registry models whose TRvlvr fallback URLs are dead (404, audited 2026-07-12) cannot be hashed until a live mirror is found.",
+  "files": {
+    "BS-Rofo-SW-Fixed.ckpt": {
+      "sha256": "24e7d35ee9c64415673d3fd33e06a67cac2c103c5df6267ba1576459c775916e",
+      "size": 699412152
+    },
+    "BS-Rofo-SW-Fixed.yaml": {
+      "sha256": "f9fada9f94e5ba2d2e4600196299459294bc5f532b314c209cc156ac63e4329b",
+      "size": 4613
+    }
+  }
+}

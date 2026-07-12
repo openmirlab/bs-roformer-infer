@@ -1,5 +1,10 @@
 """CLI entry point for BS-Roformer inference -- folder-batch separation, chunked overlap-add.
 
+Weights auto-resolve: when --model_path/--config_path are omitted, the requested
+registry model (default: the recommended SW model) is looked up in the models dir
+($BS_ROFORMER_MODELS_PATH > ~/.cache/bs-roformer-infer > legacy ./models) and
+downloaded sha256-verified on first use via download.ensure_model_assets --
+explicit paths always win and skip all of that.
 Training configs sometimes embed `!!python/tuple` YAML tags; SafeLoaderWithTuple
 downgrades those to plain lists so `yaml.load` never has to execute an arbitrary
 Python-object constructor, and utils.get_model_from_config converts the needed
@@ -7,7 +12,8 @@ params back to tuples afterward. Falls back to CPU with a warning when CUDA is
 unavailable rather than raising, since inference (unlike training) is still usable,
 just slow.
 
-Reads: .utils (demix_track, get_model_from_config), yaml, ml_collections, torch
+Reads: .utils (demix_track, get_model_from_config), .download (ensure_model_assets),
+.model_registry (DEFAULT_MODEL), yaml, ml_collections, torch
 """
 
 from __future__ import annotations
@@ -26,6 +32,8 @@ import yaml
 from ml_collections import ConfigDict
 from tqdm import tqdm
 
+from .download import ensure_model_assets
+from .model_registry import DEFAULT_MODEL
 from .utils import demix_track, get_model_from_config
 
 
@@ -125,8 +133,17 @@ def run_folder(model, args, config, device, verbose: bool = False) -> None:
 def proc_folder(args):
     parser = argparse.ArgumentParser(description="BS-Roformer inference runner")
     parser.add_argument("--model_type", type=str, default="bs_roformer")
-    parser.add_argument("--config_path", type=Path, required=True, help="path to config yaml file")
-    parser.add_argument("--model_path", type=Path, required=True, help="path to the .ckpt weights")
+    parser.add_argument("--config_path", type=Path, default=None,
+                        help="path to config yaml file (omit to auto-resolve from --model)")
+    parser.add_argument("--model_path", type=Path, default=None,
+                        help="path to the .ckpt weights (omit to auto-resolve from --model)")
+    parser.add_argument("--model", type=str, default=None,
+                        help="registry model slug/name to auto-resolve when paths are omitted "
+                             f"(default: {DEFAULT_MODEL})")
+    parser.add_argument("--models_dir", type=Path, default=None,
+                        help="directory holding downloaded model assets "
+                             "(default: $BS_ROFORMER_MODELS_PATH or ~/.cache/bs-roformer-infer; "
+                             "a legacy ./models directory is also searched)")
     parser.add_argument("--input_folder", type=Path, required=True, help="folder with songs to process")
     parser.add_argument("--store_dir", type=Path, default=Path("outputs"), help="path to store model outputs")
     parser.add_argument("--device", type=str, default=None, help="torch device string, defaults to auto")
@@ -138,6 +155,8 @@ def proc_folder(args):
         pass
     else:
         args = parser.parse_args(args)
+
+    _resolve_model_assets(args, parser)
 
     torch.backends.cudnn.benchmark = True
 
@@ -158,6 +177,24 @@ def proc_folder(args):
         model = model.to(device)
 
     run_folder(model, args, config, device, verbose=False)
+
+
+def _resolve_model_assets(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
+    """Fill in args.model_path/args.config_path, auto-downloading when both are omitted."""
+    model_path = getattr(args, "model_path", None)
+    config_path = getattr(args, "config_path", None)
+    if (model_path is None) != (config_path is None):
+        parser.error("--model_path and --config_path must be given together "
+                     "(or both omitted to auto-resolve)")
+    if model_path is not None:
+        if getattr(args, "model", None):
+            parser.error("--model selects a registry model to auto-resolve; "
+                         "it cannot be combined with explicit --model_path/--config_path")
+        return
+    model_key = getattr(args, "model", None) or DEFAULT_MODEL
+    args.model_path, args.config_path = ensure_model_assets(
+        model_key, models_dir=getattr(args, "models_dir", None)
+    )
 
 
 def _select_device(args: argparse.Namespace) -> torch.device:
