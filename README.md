@@ -99,6 +99,28 @@ Place it at
 (or the equivalent path under your `BS_ROFORMER_MODELS_PATH`), and inference
 will pick it up without network access.
 
+The other 9 registry models (re-hosted 2026-07-12, see CHANGELOG for full
+provenance) download from these mirrors:
+
+| Model | File | URL | sha256 |
+|-------|------|-----|--------|
+| De-Reverb | `deverb_bs_roformer_8_384dim_10depth.ckpt` (361,499,604 bytes) | <https://huggingface.co/Politrees/UVR_resources/resolve/main/models/Roformer/BandSplit/deverb_bs_roformer_8_384dim_10depth.ckpt> | `9c38653aaa5e49f2f7b84dd3be2b6b679e0cbea23978e6b48389ee6f0a914768` |
+| De-Reverb (config) | `deverb_bs_roformer_8_384dim_10depth_config.yaml` (2,358 bytes) | <https://huggingface.co/anvuew/dereverb_bs_roformer/resolve/main/archive/deverb_bs_roformer_8_384dim_10depth.yaml> **(author's file — NOT Politrees' similarly-named copy, which silently uses the wrong `stft_hop_length`; see CHANGELOG)** | `a87cf93b36b9a20d25a9cc4f78a2541ea0033988e7b6c38dcf0029e9290af816` |
+| Chorus Male-Female by Sucial | `model_chorus_bs_roformer_ep_267_sdr_24.1275.ckpt` (527,121,477 bytes) | <https://huggingface.co/Politrees/UVR_resources/resolve/main/models/Roformer/BandSplit/model_chorus_bs_roformer_ep_267_sdr_24.1275.ckpt> | `123c00786bdbc6bd462dddb35cd21fd6ae99ab8319f93f63a8abc1012e593d94` |
+| Instrumental Resurrection by unwa | `bs_roformer_instrumental_resurrection_unwa.ckpt` (204,483,033 bytes) | <https://huggingface.co/Politrees/UVR_resources/resolve/main/models/Roformer/BandSplit/model_BandSplit-Roformer_Resurrection_Instrumental_by-Unwa.ckpt> | `16311025a5133ae6411760ccfe9e3e66b31a01d9d8bec0a03fa7ec4bedac7a15` |
+| Male-Female by aufr33 | `bs_roformer_male_female_by_aufr33_sdr_7.2889.ckpt` (527,119,779 bytes) | <https://huggingface.co/Politrees/UVR_resources/resolve/main/models/Roformer/BandSplit/bs_roformer_male_female_by_aufr33_sdr_7.2889.ckpt> | `3cf11736d1b42a11ae55d8299316585921477dd2a671b24b663660846ca9861b` |
+| Vocals by Gabox | `bs_roformer_vocals_gabox.ckpt` (639,254,584 bytes) | <https://huggingface.co/Politrees/UVR_resources/resolve/main/models/Roformer/BandSplit/bs_roformer_voc_gabox.ckpt> | `18d58efe5e949e70fab11b875329af6d06ef11ccc29574bfe943fb57cc827f38` |
+| Vocals Resurrection by unwa | `bs_roformer_vocals_resurrection_unwa.ckpt` (204,510,749 bytes) | <https://huggingface.co/Politrees/UVR_resources/resolve/main/models/Roformer/BandSplit/model_BandSplit-Roformer_Resurrection_Vocals_by-Unwa.ckpt> | `9dbfe5cb572e4ed32a15ec727d7bd06c8d7aba97509e6fda5bc008bb1e0b2dd5` |
+| Vocals Revive by unwa | `bs_roformer_vocals_revive_unwa.ckpt` (639,326,600 bytes) | <https://huggingface.co/Politrees/UVR_resources/resolve/main/models/Roformer/BandSplit/bs_roformer_revive_by_unwa.ckpt> | `f1d7e4bfdfef07c6b2bc1d65283a7d03c3c38f8c7dbc8d729b785f93c8b8699a` |
+| Vocals Revive V2 by unwa | `bs_roformer_vocals_revive_v2_unwa.ckpt` (639,326,600 bytes) | <https://huggingface.co/Politrees/UVR_resources/resolve/main/models/Roformer/BandSplit/bs_roformer_revive_v2_by_unwa.ckpt> | `58098850c882a7472dad39f99fb8040ce6eaafe671cfe9881d89aea276bbb5f5` |
+| Vocals Revive V3e by unwa | `bs_roformer_vocals_revive_v3e_unwa.ckpt` (639,326,600 bytes) | <https://huggingface.co/Politrees/UVR_resources/resolve/main/models/Roformer/BandSplit/bs_roformer_revive_v3_by_unwa.ckpt> (hosted there without the trailing "e" — same file) | `1b0751b9a15c591407c3b77f08eb4ad3005e42e96051f3f2b39760f1130c467b` |
+
+The Chorus/Male-Female-aufr33 config
+(`config_chorus_male_female_bs_roformer.yaml`) and the three Revive
+checkpoints' shared config (`config_bs_roformer_vocals_revive_unwa.yaml`) are
+also fetched from Politrees/UVR_resources — see `data/overrides.json` for the
+exact URLs and `data/checksums.json` for their hashes.
+
 ### Download CLI (manual path)
 
 ```bash
@@ -112,11 +134,11 @@ bs-roformer-download --model roformer-model-bs-roformer-sw-by-jarredou
 bs-roformer-download --model roformer-model-bs-roformer-sw-by-jarredou --output-dir ./models
 ```
 
-> **Note on download availability** (audited 2026-07-12): only the recommended
-> BS-RoFormer-SW model currently has a live download source. The other 8
-> registry entries fall back to the upstream TRvlvr repository, whose files
-> have been removed (404 on both checkpoint and config) -- they cannot be
-> downloaded until a live mirror is found. Run
+> **Note on download availability** (re-audited 2026-07-12): all 10 registry
+> models now have live download sources. The 9 that fell back to the dead
+> upstream TRvlvr repository were re-hosted to Politrees/UVR_resources (with
+> the De-Reverb config sourced from the author's anvuew/dereverb_bs_roformer
+> repo instead — see CHANGELOG for why). Run
 > `python tools/check_weights_liveness.py` (needs network) to re-check.
 
 ---
@@ -148,10 +170,8 @@ print(DEFAULT_MODEL)  # "roformer-model-bs-roformer-sw-by-jarredou"
 
 **Categories**: multi-stem, vocals, instrumental, dereverb
 
-> As of the 2026-07-12 liveness audit, only the recommended
-> `roformer-model-bs-roformer-sw-by-jarredou` model has a live download URL;
-> the remaining registry entries are currently unavailable upstream (see the
-> availability note in [Model Weights](#model-weights)).
+> As of the 2026-07-12 re-audit, all registry entries have a live download
+> URL (see the availability note in [Model Weights](#model-weights)).
 
 ---
 
