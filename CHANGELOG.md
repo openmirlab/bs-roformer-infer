@@ -34,6 +34,16 @@ integrity verification, true auto-download, and a configurable weights folder.
 - `tests/test_weights_ux.py`: offline unit tests for the hash-verification
   wiring (including a fake-response download that must reject a wrong sha256
   and delete the file) and the models-dir resolution order.
+- **`.github/workflows/test.yml`**: push/PR-triggered CI, closing a gap found
+  in an org-wide audit — the only prior workflow was `publish.yml`, which
+  builds/tests on a single pinned Python (3.10) at release time only, so
+  nothing ran between releases. Matrix covers Python 3.10-3.13 (all four
+  verified locally: 27 passed, 19 deselected — the `network`-marked tests
+  that hit real weight hosts, already excluded by `addopts = "-m 'not
+  network'"`). A `build` job (needs `test`) does the wheel-from-sdist smoke
+  test: `python -m build`, install the wheel into a clean venv, import
+  `bs_roformer` and touch `BSRoformer`, and confirm the wheel bundles no
+  `.ckpt` weight file (constitution art. 7).
 
 ### Changed
 - Version is now single-sourced from `src/bs_roformer/__about__.py` via
