@@ -51,13 +51,18 @@ This project builds upon the excellent work of several open-source projects:
 If you use BS-RoFormer-Infer in your research, please cite the original paper:
 
 ```bibtex
-@inproceedings{Lu2023MusicSS,
-    title   = {Music Source Separation with Band-Split RoPE Transformer},
-    author  = {Wei-Tsung Lu and Ju-Chiang Wang and Qiuqiang Kong and Yun-Ning Hung},
-    year    = {2023},
-    url     = {https://api.semanticscholar.org/CorpusID:261556702}
+@inproceedings{lu2024music,
+    title     = {Music Source Separation with Band-Split RoPE Transformer},
+    author    = {Lu, Wei-Tsung and Wang, Ju-Chiang and Kong, Qiuqiang and Hung, Yun-Ning},
+    booktitle = {ICASSP 2024 - 2024 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
+    pages     = {481--485},
+    year      = {2024},
+    publisher = {IEEE},
+    doi       = {10.1109/ICASSP48485.2024.10446843}
 }
 ```
+
+Also available as a preprint: [arXiv:2309.02612](https://arxiv.org/abs/2309.02612).
 
 ---
 
