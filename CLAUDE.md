@@ -126,3 +126,6 @@ uv run ruff check .      # lint
 
 `pip install -e ".[dev]"` is the pip-only equivalent (used by
 `.github/workflows/publish.yml`'s release-gate test run).
+## OpenMIRLab inference contract
+
+This package is inference-only. Its clean facade provides an explicit lifecycle session (load, ready-only infer, release, close, status, cache_info, and context-manager support) while retaining legacy one-shot entry points for compatibility. Package-owned checkpoint configuration records URLs and integrity metadata; generic checkpoint overrides do not require code changes.
