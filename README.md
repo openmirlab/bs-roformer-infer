@@ -318,3 +318,7 @@ with BSRoformerSession() as session:
 reports the selected checkpoint. Existing CLI and downloader entry points remain
 available and lazy. Checkpoint URLs and SHA-256 metadata live in the package-owned
 `config/checkpoints.toml` and can be overridden with explicit paths or metadata.
+
+## OpenMIRLab inference contract
+
+This package is inference-only. The public clean facade exposes an explicit lifecycle session (`load`, ready-only `infer`, `release`, `close`, `status`, `cache_info`, and context-manager support) while retaining the legacy one-shot API for compatibility. Checkpoint URLs and integrity metadata are package-owned in `config/checkpoints.toml`; callers may provide a generic checkpoint override without changing package code.
