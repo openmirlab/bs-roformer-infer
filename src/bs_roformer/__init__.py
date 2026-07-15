@@ -17,6 +17,7 @@ from .download import (
     main as download_main,
 )
 from .model_registry import MODEL_REGISTRY, BSModel, DEFAULT_MODEL
+from .clean_api import BSRoformerSession, BSRoformerSeparator, separate_folder
 
 __all__ = [
     "BSRoformer",
@@ -30,4 +31,7 @@ __all__ = [
     "ensure_model_assets",
     "default_models_dir",
     "__version__",
+    "BSRoformerSession",
+    "BSRoformerSeparator",
+    "separate_folder",
 ]

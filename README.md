@@ -303,3 +303,18 @@ For issues and questions:
 - **GitHub Issues**: [github.com/openmirlab/bs-roformer-infer/issues](https://github.com/openmirlab/bs-roformer-infer/issues)
 
 ---
+## Explicit lifecycle API
+
+For applications that need controlled model lifetime, use `BSRoformerSession`:
+
+```python
+from bs_roformer import BSRoformerSession
+with BSRoformerSession() as session:
+    session.infer("input_folder", store_dir="outputs")
+```
+
+`load()` downloads and verifies weights, `infer()` requires a ready session,
+`release()` frees memory while retaining the disk cache, and `cache_info()`
+reports the selected checkpoint. Existing CLI and downloader entry points remain
+available and lazy. Checkpoint URLs and SHA-256 metadata live in the package-owned
+`config/checkpoints.toml` and can be overridden with explicit paths or metadata.

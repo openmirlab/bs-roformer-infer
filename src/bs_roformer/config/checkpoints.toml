@@ -1,0 +1,23 @@
+[schema]
+version = 1
+
+[models.roformer-model-bs-roformer-sw-by-jarredou]
+model = "roformer-model-bs-roformer-sw-by-jarredou"
+license = "CC-BY-NC-SA-4.0"
+provenance = "OpenMIRLab release metadata; upstream BS-RoFormer-SW checkpoint mirror"
+source_revision = "2026-07-12"
+updated_at = "2026-07-12"
+
+[[models.roformer-model-bs-roformer-sw-by-jarredou.artifacts]]
+kind = "checkpoint"
+name = "BS-Rofo-SW-Fixed.ckpt"
+url = "https://huggingface.co/enerjazzer/BS-ROFO-SW-Fixed/resolve/main/BS-Rofo-SW-Fixed.ckpt"
+sha256 = "24e7d35ee9c64415673d3fd33e06a67cac2c103c5df6267ba1576459c775916e"
+size = 699412152
+
+[[models.roformer-model-bs-roformer-sw-by-jarredou.artifacts]]
+kind = "config"
+name = "BS-Rofo-SW-Fixed.yaml"
+url = "https://huggingface.co/enerjazzer/BS-ROFO-SW-Fixed/resolve/main/BS-Rofo-SW-Fixed.yaml"
+sha256 = "f9fada9f94e5ba2d2e4600196299459294bc5f532b314c209cc156ac63e4329b"
+size = 4613

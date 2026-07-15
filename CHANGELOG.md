@@ -209,3 +209,7 @@ integrity verification, true auto-download, and a configurable weights folder.
 ## [0.1.1] - 2026-06
 
 - See git history prior to this file's creation.
+## Unreleased
+
+- Added the additive `BSRoformerSession` lifecycle facade and package-owned
+  `config/checkpoints.toml` checkpoint metadata.

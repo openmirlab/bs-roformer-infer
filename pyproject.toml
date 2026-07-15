@@ -67,6 +67,7 @@ include = [
     "src/bs_roformer/**/*.py",
     "src/bs_roformer/configs/*.yaml",
     "src/bs_roformer/data/*.json",
+    "src/bs_roformer/config/*.toml",
 ]
 
 [tool.uv]
