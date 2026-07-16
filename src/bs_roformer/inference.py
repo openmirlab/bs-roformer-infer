@@ -1,4 +1,4 @@
-"""CLI entry point for BS-Roformer inference -- folder-batch separation, chunked overlap-add.
+"""CLI entry point for BS-Roformer inference -- folder-batch separation and output manifests.
 
 Weights auto-resolve: when --model_path/--config_path are omitted, the requested
 registry model (default: the recommended SW model) is looked up in the models dir
@@ -10,7 +10,9 @@ downgrades those to plain lists so `yaml.load` never has to execute an arbitrary
 Python-object constructor, and utils.get_model_from_config converts the needed
 params back to tuples afterward. Falls back to CPU with a warning when CUDA is
 unavailable rather than raising, since inference (unlike training) is still usable,
-just slow.
+just slow. `run_folder()` returns an immutable manifest of the files it actually
+writes, derived from the loaded config and successful writes rather than guessed
+registry metadata.
 
 Reads: .utils (demix_track, get_model_from_config), .download (ensure_model_assets),
 .model_registry (DEFAULT_MODEL), yaml, ml_collections, torch
@@ -21,6 +23,7 @@ from __future__ import annotations
 import argparse
 import sys
 import time
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
@@ -68,7 +71,53 @@ def _format_iterable(paths: Iterable[Path], verbose: bool) -> Iterable[Path]:
     return tqdm(paths, desc="Tracks", unit="track") if not verbose else paths
 
 
-def run_folder(model, args, config, device, verbose: bool = False) -> None:
+@dataclass(frozen=True)
+class OutputFile:
+    input_path: str
+    output_id: str
+    output_path: str
+
+    def as_dict(self) -> dict[str, str]:
+        return {
+            "input_path": self.input_path,
+            "output_id": self.output_id,
+            "output_path": self.output_path,
+        }
+
+
+@dataclass(frozen=True)
+class OutputManifest:
+    outputs: tuple[OutputFile, ...]
+
+    def as_dict(self) -> dict[str, list[dict[str, str]]]:
+        return {"outputs": [output.as_dict() for output in self.outputs]}
+
+
+def _configured_output_ids(config: ConfigDict) -> list[str]:
+    output_ids = list(config.training.instruments)
+    target_instrument = getattr(config.training, "target_instrument", None)
+    if target_instrument is not None:
+        output_ids = [target_instrument]
+    return output_ids
+
+
+def _append_output(
+    outputs: list[OutputFile],
+    *,
+    input_path: Path,
+    output_id: str,
+    output_path: Path,
+) -> None:
+    outputs.append(
+        OutputFile(
+            input_path=str(input_path),
+            output_id=output_id,
+            output_path=str(output_path),
+        )
+    )
+
+
+def run_folder(model, args, config, device, verbose: bool = False) -> OutputManifest:
     start_time = time.time()
     model.eval()
 
@@ -78,18 +127,18 @@ def run_folder(model, args, config, device, verbose: bool = False) -> None:
     total_tracks = len(all_mixtures_path)
     print(f"Total tracks found: {total_tracks}")
 
-    instruments = config.training.instruments
-    if getattr(config.training, "target_instrument", None) is not None:
-        instruments = [config.training.target_instrument]
+    output_ids = _configured_output_ids(config)
 
     iterable = _format_iterable(all_mixtures_path, verbose)
 
     first_chunk_time = None
+    outputs: list[OutputFile] = []
 
     for track_number, path in enumerate(iterable, 1):
         print(f"\nProcessing track {track_number}/{total_tracks}: {path.name}")
 
         mix, sr = sf.read(path)
+        original_mix = mix
         original_mono = False
         if len(mix.shape) == 1:
             original_mono = True
@@ -107,30 +156,42 @@ def run_folder(model, args, config, device, verbose: bool = False) -> None:
 
         res, first_chunk_time = demix_track(config, model, mixture, device, first_chunk_time)
 
-        for instr in instruments:
-            vocals_output = res[instr].T
+        for output_id in output_ids:
+            output_audio = res[output_id].T
+            if original_mono:
+                output_audio = output_audio[:, 0]
+
+            output_path = store_dir / f"{path.stem}_{output_id}.wav"
+            sf.write(output_path, output_audio, sr, subtype="FLOAT")
+            _append_output(
+                outputs,
+                input_path=path,
+                output_id=output_id,
+                output_path=output_path,
+            )
+
+        if "vocals" in output_ids and "instrumental" not in output_ids:
+            vocals_output = res["vocals"].T
             if original_mono:
                 vocals_output = vocals_output[:, 0]
 
-            vocals_path = store_dir / f"{path.stem}_{instr}.wav"
-            sf.write(vocals_path, vocals_output, sr, subtype="FLOAT")
-
-        if instruments:
-            vocals_output = res[instruments[0]].T
-            if original_mono:
-                vocals_output = vocals_output[:, 0]
-
-            original_mix, _ = sf.read(path)
             instrumental = original_mix - vocals_output
 
             instrumental_path = store_dir / f"{path.stem}_instrumental.wav"
             sf.write(instrumental_path, instrumental, sr, subtype="FLOAT")
+            _append_output(
+                outputs,
+                input_path=path,
+                output_id="instrumental",
+                output_path=instrumental_path,
+            )
 
     time.sleep(1)
     print("Elapsed time: {:.2f} sec".format(time.time() - start_time))
+    return OutputManifest(outputs=tuple(outputs))
 
 
-def proc_folder(args):
+def proc_folder(args) -> OutputManifest:
     parser = argparse.ArgumentParser(description="BS-Roformer inference runner")
     parser.add_argument("--model_type", type=str, default="bs_roformer")
     parser.add_argument("--config_path", type=Path, default=None,
@@ -176,7 +237,7 @@ def proc_folder(args):
     else:
         model = model.to(device)
 
-    run_folder(model, args, config, device, verbose=False)
+    return run_folder(model, args, config, device, verbose=False)
 
 
 def _resolve_model_assets(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:

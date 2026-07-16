@@ -10,7 +10,7 @@ Reads: .__about__, .bs_roformer, .utils, .inference, .download, .model_registry
 from .__about__ import __version__
 from .bs_roformer import BSRoformer
 from .utils import get_model_from_config, demix_track
-from .inference import main as inference_main
+from .inference import OutputFile, OutputManifest, main as inference_main
 from .download import (
     default_models_dir,
     ensure_model_assets,
@@ -26,6 +26,8 @@ __all__ = [
     "DEFAULT_MODEL",
     "get_model_from_config",
     "demix_track",
+    "OutputFile",
+    "OutputManifest",
     "inference_main",
     "download_main",
     "ensure_model_assets",

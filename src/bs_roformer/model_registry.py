@@ -4,7 +4,8 @@ Backed by data/bs_models.json rather than hardcoded Python so new models can be 
 without a code change. `get()` accepts a slug, friendly name, or checkpoint filename
 interchangeably, since callers (the download CLI, this package's `__init__`) rarely
 agree on which key they have handy. `BSModel.default_sources` maps category ->
-expected output stems, since the raw JSON doesn't declare that itself.
+expected raw model outputs only; inference-time derived files like
+`*_instrumental.wav` belong to run_folder() manifests instead.
 
 Reads: data/bs_models.json
 """
@@ -30,6 +31,8 @@ class BSModel:
 
     @property
     def default_sources(self) -> List[str]:
+        if self.category == "multi-stem":
+            return ["bass", "drums", "other", "vocals", "guitar", "piano"]
         if self.category in {"instrumental"}:
             return ["instrumental", "vocals"]
         if self.category in {"karaoke", "vocals"}:
