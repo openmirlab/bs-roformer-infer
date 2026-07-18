@@ -15,6 +15,8 @@ non-empty-size check and say so. The models directory resolves as: explicit argu
 > $BS_ROFORMER_MODELS_PATH > ~/.cache/bs-roformer-infer, with a legacy ./models
 directory honored as a read fallback so pre-0.1.4 users don't re-download.
 ensure_model_assets() is the auto-download entry point inference.py uses on first run.
+is_model_cached() answers the same "is it there?" question against the same search
+chain, without downloading, for callers that only need it for status reporting.
 
 Reads: .model_registry (BSModel, MODEL_REGISTRY, DEFAULT_MODEL), data/overrides.json,
 data/checksums.json, requests, tqdm
@@ -337,6 +339,23 @@ def download_model_assets(models: Sequence[BSModel],
         if not models_only:
             success &= _download_config(model, model_dir, force)
     return success
+
+
+def is_model_cached(model: Union[str, BSModel] = DEFAULT_MODEL,
+                    models_dir: Optional[Union[str, Path]] = None) -> bool:
+    """True if `model`'s checkpoint is already present in any search directory.
+
+    Answers the cheap question -- "is it cached?" -- without downloading or touching
+    the network, using the exact same search chain ensure_model_assets() uses to find
+    an existing copy. Exists for callers that only need this for STATUS reporting
+    (e.g. a UI/orchestrator deciding whether to show "loading" vs "downloading")
+    and must not trigger -- or duplicate the resolution logic behind -- a download.
+    """
+    entry = MODEL_REGISTRY.get(model) if isinstance(model, str) else model
+    for base in models_search_dirs(models_dir):
+        if (base / entry.slug / entry.checkpoint).exists():
+            return True
+    return False
 
 
 def ensure_model_assets(model: Union[str, BSModel] = DEFAULT_MODEL,

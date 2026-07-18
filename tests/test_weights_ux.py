@@ -6,10 +6,14 @@ resolves explicit arg > $BS_ROFORMER_MODELS_PATH > ~/.cache/bs-roformer-infer wi
 legacy ./models as a read fallback, and ensure_model_assets() prefers existing
 local copies without touching the network. All tests run offline on temp files;
 the fake-response test drives download_file end-to-end with monkeypatched requests.
+is_model_cached() gets its own section: it must agree with ensure_model_assets()
+on what counts as cached (default dir, legacy dir, explicit override) without ever
+downloading -- it exists precisely so a caller can ask "is it cached?" for status
+reporting without risking a side-effecting download.
 
 Reads: bs_roformer.download (get_file_hash, verify_file_integrity, download_file,
-CHECKSUMS, default_models_dir, models_search_dirs, ensure_model_assets),
-bs_roformer.model_registry (MODEL_REGISTRY, DEFAULT_MODEL)
+CHECKSUMS, default_models_dir, models_search_dirs, ensure_model_assets,
+is_model_cached), bs_roformer.model_registry (MODEL_REGISTRY, DEFAULT_MODEL)
 """
 
 from __future__ import annotations
@@ -156,6 +160,58 @@ def test_ensure_model_assets_raises_when_missing_and_download_disabled(monkeypat
     monkeypatch.delenv(dl.MODELS_DIR_ENV, raising=False)
     with pytest.raises(FileNotFoundError):
         dl.ensure_model_assets(DEFAULT_MODEL, models_dir=tmp_path, download_missing=False)
+
+
+# ---------------------------------------------------------------- is_model_cached
+
+
+def test_is_model_cached_true_in_default_dir(monkeypatch, tmp_path):
+    entry = MODEL_REGISTRY.get(DEFAULT_MODEL)
+    monkeypatch.setenv(dl.MODELS_DIR_ENV, str(tmp_path))
+    model_dir = tmp_path / entry.slug
+    model_dir.mkdir(parents=True)
+    (model_dir / entry.checkpoint).write_bytes(b"fake checkpoint")
+
+    assert dl.is_model_cached(DEFAULT_MODEL) is True
+
+
+def test_is_model_cached_true_in_legacy_dir(monkeypatch, tmp_path):
+    entry = MODEL_REGISTRY.get(DEFAULT_MODEL)
+    monkeypatch.delenv(dl.MODELS_DIR_ENV, raising=False)
+    monkeypatch.chdir(tmp_path)
+    legacy_dir = tmp_path / "models" / entry.slug
+    legacy_dir.mkdir(parents=True)
+    (legacy_dir / entry.checkpoint).write_bytes(b"fake checkpoint")
+
+    assert dl.is_model_cached(DEFAULT_MODEL) is True
+
+
+def test_is_model_cached_false_when_absent_everywhere(monkeypatch, tmp_path):
+    monkeypatch.setenv(dl.MODELS_DIR_ENV, str(tmp_path / "empty"))
+    monkeypatch.chdir(tmp_path)
+
+    assert dl.is_model_cached(DEFAULT_MODEL) is False
+
+
+def test_is_model_cached_respects_explicit_models_dir_override(monkeypatch, tmp_path):
+    entry = MODEL_REGISTRY.get(DEFAULT_MODEL)
+    monkeypatch.setenv(dl.MODELS_DIR_ENV, str(tmp_path / "env-dir"))
+    explicit_dir = tmp_path / "explicit"
+    model_dir = explicit_dir / entry.slug
+    model_dir.mkdir(parents=True)
+    (model_dir / entry.checkpoint).write_bytes(b"fake checkpoint")
+
+    # Env dir has nothing -- only the explicit override does.
+    assert dl.is_model_cached(DEFAULT_MODEL, models_dir=explicit_dir) is True
+    assert dl.is_model_cached(DEFAULT_MODEL) is False
+
+
+def test_is_model_cached_never_touches_network(monkeypatch, tmp_path):
+    monkeypatch.setenv(dl.MODELS_DIR_ENV, str(tmp_path))
+    monkeypatch.setattr(dl, "download_file",
+                        lambda *a, **k: pytest.fail("network download attempted"))
+
+    assert dl.is_model_cached(DEFAULT_MODEL) is False
 
 
 # ---------------------------------------------------------------- download verification wiring
