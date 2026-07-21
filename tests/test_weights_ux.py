@@ -111,8 +111,10 @@ def test_legacy_models_dir_is_search_fallback(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "models").mkdir()
     dirs = dl.models_search_dirs()
-    assert dirs[0] == Path.home() / ".cache" / dl.CACHE_DIR_NAME
-    assert Path("models") in dirs
+    monkeypatch.setattr(dl, "default_models_dir", lambda: tmp_path / "empty-cache")
+    dirs = dl.models_search_dirs()
+    assert dirs[0] == tmp_path / "empty-cache"
+    assert dirs[1] == Path("models")
 
 
 def test_no_legacy_fallback_without_models_dir(monkeypatch, tmp_path):
@@ -143,6 +145,7 @@ def test_ensure_model_assets_prefers_existing_local_copy(monkeypatch, tmp_path):
 def test_ensure_model_assets_finds_legacy_models_dir(monkeypatch, tmp_path):
     entry = MODEL_REGISTRY.get(DEFAULT_MODEL)
     monkeypatch.delenv(dl.MODELS_DIR_ENV, raising=False)
+    monkeypatch.setattr(dl, "default_models_dir", lambda: tmp_path / "empty-cache")
     monkeypatch.chdir(tmp_path)
     legacy_dir = tmp_path / "models" / entry.slug
     legacy_dir.mkdir(parents=True)

@@ -66,8 +66,12 @@ packages = ["src/bs_roformer"]
 include = [
     "src/bs_roformer/**/*.py",
     "src/bs_roformer/configs/*.yaml",
-    "src/bs_roformer/data/*.json",
     "src/bs_roformer/config/*.toml",
+]
+exclude = [
+    "src/bs_roformer/data/bs_models.json",
+    "src/bs_roformer/data/checksums.json",
+    "src/bs_roformer/data/overrides.json",
 ]
 
 [tool.uv]

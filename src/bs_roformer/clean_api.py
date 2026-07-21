@@ -60,8 +60,8 @@ class BSRoformerSession:
     def load(self):
         if self._status == "ready":
             return self
-        if self._status == "released":
-            raise RuntimeError("cannot load a released BSRoformerSession")
+        if self._status == "closed":
+            raise RuntimeError("cannot load a closed BSRoformerSession")
         self._status = "loading"
         try:
             from .download import ensure_model_assets, get_file_hash
@@ -92,7 +92,9 @@ class BSRoformerSession:
                 raise ValueError(f"checkpoint SHA-256 mismatch for {self.model_path}")
             state = torch.load(self.model_path, map_location="cpu")
             self._model.load_state_dict(state)
-            target = torch.device(self.device or ("cuda:0" if torch.cuda.is_available() else "cpu"))
+            from .inference import _select_device
+            from argparse import Namespace
+            target = _select_device(Namespace(device=self.device))
             self._model = self._model.to(target).eval()
             self.device = target
             self._status = "ready"
@@ -126,18 +128,29 @@ class BSRoformerSession:
                 torch.cuda.empty_cache()
         except ImportError:
             pass
-        self._status = "released"
+        if self._status != "closed":
+            self._status = "released"
 
     def close(self):
         self.release()
+        self._status = "closed"
 
     def cache_info(self):
+        resolved_checkpoint = self.model_path
+        if resolved_checkpoint is None:
+            from .download import ensure_model_assets
+            try:
+                resolved_checkpoint, _ = ensure_model_assets(
+                    self.model_name, models_dir=self.models_dir, download_missing=False
+                )
+            except FileNotFoundError:
+                pass
         return {
             "model": self.model_name,
             "status": self._status,
             "model_loaded": self._model is not None,
             "models_dir": str(self.models_dir) if self.models_dir else None,
-            "checkpoint_path": str(self.model_path) if self.model_path else None,
+            "checkpoint_path": str(resolved_checkpoint) if resolved_checkpoint else None,
             "checkpoint_url": self.checkpoint_url
             or next(
                 (

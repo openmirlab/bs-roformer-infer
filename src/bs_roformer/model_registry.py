@@ -1,24 +1,23 @@
 """Model registry -- checkpoint/config/category metadata for every BS-Roformer variant.
 
-Backed by data/bs_models.json rather than hardcoded Python so new models can be added
-without a code change. `get()` accepts a slug, friendly name, or checkpoint filename
+Backed by package-owned config/checkpoints.toml so new models can be added without a
+code change. `get()` accepts a slug, friendly name, or checkpoint filename
 interchangeably, since callers (the download CLI, this package's `__init__`) rarely
 agree on which key they have handy. `BSModel.default_sources` maps category ->
 expected raw model outputs only; inference-time derived files like
 `*_instrumental.wav` belong to run_folder() manifests instead.
 
-Reads: data/bs_models.json
+Reads: checkpoints.py
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-import json
 from pathlib import Path
 from typing import Dict, List, Optional
 
 _PACKAGE_ROOT = Path(__file__).resolve().parent
-_MODEL_DATA_PATH = _PACKAGE_ROOT / "data" / "bs_models.json"
+
 
 
 @dataclass(frozen=True)
@@ -44,14 +43,15 @@ class BSModel:
 
 class ModelRegistry:
     def __init__(self):
-        data = json.loads(_MODEL_DATA_PATH.read_text())
+        from .checkpoints import load_checkpoints
+        data = load_checkpoints()
         self._models: Dict[str, BSModel] = {}
         for slug, meta in data["models"].items():
             model = BSModel(
                 slug=slug,
                 name=meta["name"],
-                checkpoint=meta["checkpoint"],
-                config=meta["config"],
+                checkpoint=next(a["name"] for a in meta["artifacts"] if a["kind"] == "checkpoint"),
+                config=next(a["name"] for a in meta["artifacts"] if a["kind"] == "config"),
                 category=meta.get("category", "general"),
             )
             self._models[slug] = model

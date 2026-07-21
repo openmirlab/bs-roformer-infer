@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Legacy `./models` assets remain a read fallback after the explicit/env/default
+  cache target; fallback tests isolate the default cache from ambient state.
+- Explicit device tokens now validate CUDA availability/index instead of falling
+  back, and released sessions can load again while closed sessions are terminal.
+
 All notable changes to this project are documented in this file.
 
 ## [0.1.5] - 2026-07-12

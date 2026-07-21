@@ -33,4 +33,10 @@ def checkpoint_metadata(model: str) -> dict:
     except KeyError as exc:
         raise KeyError(f"unknown checkpoint model: {model}") from exc
 
-__all__ = ["checkpoint_config_path", "load_checkpoints", "checkpoint_metadata"]
+def artifact_metadata(model: str, kind: str) -> dict:
+    for artifact in checkpoint_metadata(model)["artifacts"]:
+        if artifact.get("kind") == kind:
+            return dict(artifact)
+    raise KeyError(f"missing {kind} artifact for {model}")
+
+__all__ = ["checkpoint_config_path", "load_checkpoints", "checkpoint_metadata", "artifact_metadata"]

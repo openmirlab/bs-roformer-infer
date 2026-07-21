@@ -3,13 +3,11 @@
 
 Third-party HF accounts can vanish without warning: the jarredou account behind the
 original BS-RoFormer-SW checkpoint was deleted (discovered 2026-06), 404ing the
-default model's download URL for every user until 557f791 repointed it. data/overrides.json
-is the patch point for exactly this failure mode -- when a URL starts 404ing, edit
-that file first, before touching this module's code. Resolution precedence per asset:
-overrides.json entry > packaged local file under configs/ (configs only, checked by
-_copy_packaged_config) > DEFAULT_CKPT_BASE_URL / DEFAULT_CONFIG_BASE_URL construction.
+default model's download URL for every user until 557f791 repointed it. Package-owned
+``config/checkpoints.toml`` is the URL/integrity source of truth; packaged local configs
+remain an explicit offline artifact policy.
 
-Downloads are sha256-verified against data/checksums.json (mismatch = delete + retry,
+Downloads are sha256-verified against TOML metadata (mismatch = delete + retry,
 never a silently kept corrupt file); assets without a recorded hash fall back to the
 non-empty-size check and say so. The models directory resolves as: explicit argument
 > $BS_ROFORMER_MODELS_PATH > ~/.cache/bs-roformer-infer, with a legacy ./models
@@ -18,15 +16,13 @@ ensure_model_assets() is the auto-download entry point inference.py uses on firs
 is_model_cached() answers the same "is it there?" question against the same search
 chain, without downloading, for callers that only need it for status reporting.
 
-Reads: .model_registry (BSModel, MODEL_REGISTRY, DEFAULT_MODEL), data/overrides.json,
-data/checksums.json, requests, tqdm
+Reads: .model_registry, .checkpoints, requests, tqdm
 """
 
 from __future__ import annotations
 
 import argparse
 import hashlib
-import json
 import os
 import shutil
 import sys
@@ -38,6 +34,24 @@ import requests
 from tqdm import tqdm
 
 from .model_registry import DEFAULT_MODEL, MODEL_REGISTRY, BSModel
+from .checkpoints import artifact_metadata
+
+# Compatibility views derived from the TOML runtime source, not legacy JSON.
+CHECKPOINT_URL_OVERRIDES = {
+    artifact["name"]: artifact["url"]
+    for model in MODEL_REGISTRY.list()
+    for artifact in (artifact_metadata(model.slug, "checkpoint"),)
+}
+CONFIG_URL_OVERRIDES = {
+    artifact["name"]: artifact["url"]
+    for model in MODEL_REGISTRY.list()
+    for artifact in (artifact_metadata(model.slug, "config"),)
+}
+CHECKSUMS = {
+    artifact["name"]: {"sha256": artifact["sha256"], "size": artifact["size"]}
+    for model in MODEL_REGISTRY.list()
+    for artifact in (artifact_metadata(model.slug, "checkpoint"), artifact_metadata(model.slug, "config"))
+}
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
 DATA_ROOT = PACKAGE_ROOT / "data"
@@ -47,30 +61,6 @@ LEGACY_MODELS_DIR = Path("models")
 DEFAULT_CKPT_BASE_URL = "https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/"
 DEFAULT_CONFIG_BASE_URL = "https://raw.githubusercontent.com/TRvlvr/application_data/main/mdx_model_data/mdx_c_configs/"
 
-STATIC_CHECKPOINT_OVERRIDES = {}
-
-
-def _load_override_maps():
-    path = DATA_ROOT / "overrides.json"
-    if not path.exists():
-        return {}, {}
-    data = json.loads(path.read_text())
-    return data.get("checkpoints", {}), data.get("configs", {})
-
-
-_CHECKPOINT_OVERRIDES_EXTRA, _CONFIG_OVERRIDES_EXTRA = _load_override_maps()
-CHECKPOINT_URL_OVERRIDES = {**STATIC_CHECKPOINT_OVERRIDES, **_CHECKPOINT_OVERRIDES_EXTRA}
-CONFIG_URL_OVERRIDES = _CONFIG_OVERRIDES_EXTRA
-
-
-def _load_checksums() -> dict:
-    path = DATA_ROOT / "checksums.json"
-    if not path.exists():
-        return {}
-    return json.loads(path.read_text()).get("files", {})
-
-
-CHECKSUMS = _load_checksums()
 
 
 def default_models_dir() -> Path:
@@ -253,19 +243,14 @@ def _resolve_models(args) -> List[BSModel]:
 
 
 def _checkpoint_url(model: BSModel) -> Optional[str]:
-    return CHECKPOINT_URL_OVERRIDES.get(
-        model.checkpoint,
-        f"{DEFAULT_CKPT_BASE_URL}{model.checkpoint}"
-    )
+    return artifact_metadata(model.slug, "checkpoint").get("url") or None
 
 
 def _config_url(model: BSModel) -> Optional[str]:
     packaged = PACKAGE_ROOT / "configs" / model.config
     if packaged.exists():
         return None
-    if model.config in CONFIG_URL_OVERRIDES:
-        return CONFIG_URL_OVERRIDES[model.config]
-    return f"{DEFAULT_CONFIG_BASE_URL}{model.config}"
+    return artifact_metadata(model.slug, "config").get("url") or None
 
 
 def _copy_packaged_config(model: BSModel, target_path: Path) -> bool:
@@ -280,10 +265,12 @@ def _copy_packaged_config(model: BSModel, target_path: Path) -> bool:
 
 def _expected_checksum(filename: str) -> Tuple[Optional[str], Optional[int]]:
     """Recorded (sha256, size) for a downloadable asset, or (None, None) if unrecorded."""
-    entry = CHECKSUMS.get(filename)
-    if not entry:
-        return None, None
-    return entry.get("sha256"), entry.get("size")
+    for model in MODEL_REGISTRY.list():
+        for kind in ("checkpoint", "config"):
+            artifact = artifact_metadata(model.slug, kind)
+            if artifact["name"] == filename:
+                return artifact.get("sha256") or None, artifact.get("size") or None
+    return None, None
 
 
 def _download_checkpoint(model: BSModel, model_dir: Path, force: bool) -> bool:

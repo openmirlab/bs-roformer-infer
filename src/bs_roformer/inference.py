@@ -259,16 +259,23 @@ def _resolve_model_assets(args: argparse.Namespace, parser: argparse.ArgumentPar
 
 
 def _select_device(args: argparse.Namespace) -> torch.device:
-    if args.device:
-        if args.device == "cpu":
-            return torch.device("cpu")
-        return torch.device(args.device)
-
-    if torch.cuda.is_available():
-        return torch.device("cuda:0")
-
-    print("CUDA is not available. Falling back to CPU. This will be slow.")
-    return torch.device("cpu")
+    requested = getattr(args, "device", None)
+    if isinstance(requested, torch.device):
+        return requested
+    if requested is None or requested == "auto":
+        return torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    if requested == "cpu":
+        return torch.device("cpu")
+    if not isinstance(requested, str) or not requested.startswith("cuda"):
+        raise ValueError("device must be None, 'auto', 'cpu', 'cuda', or 'cuda:N'")
+    suffix = requested[4:]
+    if suffix and (not suffix.startswith(":") or not suffix[1:].isdigit()):
+        raise ValueError("device must be None, 'auto', 'cpu', 'cuda', or 'cuda:N'")
+    if not torch.cuda.is_available():
+        raise RuntimeError(f"CUDA was explicitly requested ({requested}) but is unavailable")
+    if suffix and int(suffix[1:]) >= torch.cuda.device_count():
+        raise RuntimeError(f"CUDA device index {suffix[1:]} is unavailable")
+    return torch.device(requested)
 
 
 def main():

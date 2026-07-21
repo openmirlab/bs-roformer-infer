@@ -7,6 +7,11 @@ bs-roformer-infer is an inference-only package wrapping BS-RoFormer
 [lucidrains/BS-RoFormer](https://github.com/lucidrains/BS-RoFormer)
 architecture as a pip-installable, PyTorch-based CLI + Python API with
 automatic checkpoint management: no training code, no UVR GUI dependency.
+
+Devices preserve legacy `None` auto-selection and also accept explicit `auto`,
+`cpu`, `cuda`, and `cuda:N`; explicit CUDA errors must raise. Sessions may
+release and reload models, but closed sessions are terminal. `cache_info()` and
+loading share the download resolver, which reads package-owned checkpoints TOML.
 Given an input folder of WAV files, it produces separated stems (vocals,
 drums, bass, guitar, piano, other) plus an `*_instrumental.wav` per track.
 See README.md for the public API, CLI, and full model registry.

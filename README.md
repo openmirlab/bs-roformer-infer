@@ -4,6 +4,16 @@
 
 BS-RoFormer-Infer provides a clean, lightweight API for running music source separation inference using Band-Split RoFormer models with automatic checkpoint management.
 
+## Devices and lifecycle
+
+Legacy `None` and explicit `auto` select CUDA when available, otherwise CPU.
+Explicit `cpu`, `cuda`, and `cuda:N` are supported; unavailable CUDA raises.
+`BSRoformerSession.release()` permits a later reload, while `close()` is terminal.
+Loading and `cache_info()` use the same checkpoint resolver; its package-owned
+`config/checkpoints.toml` remains the authoritative URL/integrity metadata.
+Legacy JSON files remain only as transition compatibility fixtures and are not
+read by production registry/download resolution.
+
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
