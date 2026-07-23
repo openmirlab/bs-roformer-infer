@@ -9,11 +9,12 @@ learned_value_residual_mix feature: existing published checkpoints were trained
 without them, and enabling either would silently break state_dict compatibility.
 Upstream configs may still vary the MaskEstimator MLP width through
 ``mlp_expansion_factor``; this parameter is passed through for checkpoint parity.
-HyperACE and FNO checkpoints keep the same trunk but add different mask heads,
-selected explicitly through ``mask_estimator_variant``.
+HyperACE, FNO, and Large-Inst checkpoints keep the same trunk but add different
+mask heads, selected explicitly through ``mask_estimator_variant``.
 
 Reads: .attend.Attend, .fno.FNOMaskEstimator, .hyperace.HyperACEMaskEstimator,
-rotary_embedding_torch.RotaryEmbedding, beartype, einops, torch
+.large_inst.LargeInstMaskEstimator, rotary_embedding_torch.RotaryEmbedding,
+beartype, einops, torch
 """
 
 from __future__ import annotations
@@ -311,6 +312,15 @@ def _create_mask_estimator(
         from .fno import FNOMaskEstimator
 
         return FNOMaskEstimator(
+            dim = dim,
+            dim_inputs = dim_inputs,
+            depth = depth,
+            mlp_expansion_factor = mlp_expansion_factor,
+        )
+    if variant == "large_inst":
+        from .large_inst import LargeInstMaskEstimator
+
+        return LargeInstMaskEstimator(
             dim = dim,
             dim_inputs = dim_inputs,
             depth = depth,

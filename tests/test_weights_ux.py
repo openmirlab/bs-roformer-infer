@@ -1,6 +1,6 @@
 """Weights-UX regression tests -- sha256 verification wiring + models-dir resolution.
 
-Locks the 0.1.4 weights contract: downloads verify against data/checksums.json
+Locks the weights contract: downloads verify against config/checkpoints.toml
 (a wrong hash must fail and remove the file, not ship it), the models directory
 resolves explicit arg > $BS_ROFORMER_MODELS_PATH > ~/.cache/bs-roformer-infer with
 legacy ./models as a read fallback, and ensure_model_assets() prefers existing
@@ -71,7 +71,7 @@ def test_verify_integrity_rejects_empty_and_missing(tmp_path):
 
 
 def test_checksums_file_well_formed():
-    assert dl.CHECKSUMS, "data/checksums.json must ship with recorded hashes"
+    assert dl.CHECKSUMS, "config/checkpoints.toml must ship with recorded hashes"
     for filename, entry in dl.CHECKSUMS.items():
         assert HEX64.fullmatch(entry["sha256"]), f"bad sha256 for {filename}"
         assert isinstance(entry["size"], int) and entry["size"] > 0, f"bad size for {filename}"

@@ -187,6 +187,41 @@ class TestModelInstantiation:
         assert model.mask_estimator_variant == "fno"
         assert hasattr(model.mask_estimators[0].to_freqs[0][0], "fno_blocks")
 
+    def test_large_inst_variation_selects_transformer_head(self):
+        """Registry metadata can select the Large-Inst MaskEstimator variation."""
+        config = ConfigDict(
+            {
+                "model": {
+                    "dim": 8,
+                    "depth": 1,
+                    "stereo": True,
+                    "num_stems": 1,
+                    "time_transformer_depth": 1,
+                    "freq_transformer_depth": 1,
+                    "freqs_per_bands": [512, 513],
+                    "dim_head": 4,
+                    "heads": 1,
+                    "dim_freqs_in": 1025,
+                    "stft_n_fft": 2048,
+                    "stft_hop_length": 512,
+                    "stft_win_length": 2048,
+                    "mask_estimator_depth": 2,
+                    "mlp_expansion_factor": 4,
+                },
+                "training": {"target_instrument": "instrument", "instruments": ["vocals", "instrument"]},
+            }
+        )
+
+        model = get_model_from_config(
+            "bs_roformer",
+            config,
+            model_variation="large_inst",
+        )
+
+        assert model.mask_estimator_variant == "large_inst"
+        assert len(model.mask_estimators[0].layers) == 4
+        assert hasattr(model.mask_estimators[0], "norm")
+
     def test_checkpoint_loader_strips_extra_metadata(self, tmp_path, monkeypatch):
         """FNO checkpoint metadata is loader compatibility data, not a model key."""
         checkpoint = tmp_path / "model.ckpt"

@@ -169,6 +169,14 @@
     "bsrofo_fno.yaml": {
       "sha256": "8e79699a9d75c31c407f02e84b00521d9c8e59ae323a4449f911dd8c10defeac",
       "size": 2373
+    },
+    "bs_large_v2_inst.ckpt": {
+      "sha256": "09251ab8b5bb892414a6ab8aa80a1be30c17852d5e7f4e76943610de049e4bc4",
+      "size": 238214371
+    },
+    "bs_large_v2_inst_config.yaml": {
+      "sha256": "85d10906007df21ee48dbb86faa09205609274eb38ea224dce767e2844d0a934",
+      "size": 1973
     }
   }
 }

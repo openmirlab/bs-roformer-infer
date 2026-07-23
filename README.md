@@ -157,6 +157,7 @@ print(DEFAULT_MODEL)  # "roformer-model-bs-roformer-sw-by-jarredou"
 | `roformer-model-bs-roformer-mvsep-mega-53-stems` | mega-stem | MVSep Mega 53-stem model by ZFTurbo; memory-heavy, upstream recommends at least 16GB VRAM |
 | `roformer-model-bs-roformer-musdb18hq-by-zfturbo` | four-stem | MUSDB18HQ 4-stem model from ZFTurbo's v1.0.12 release |
 | `roformer-model-bs-roformer-fno-instrumental-by-pcunwa` | instrumental | FNO instrumental checkpoint; uses a bundled minimal FNO1d mask-estimator variation |
+| `roformer-model-bs-roformer-large-inst-by-pcunwa` | instrumental | Large-Inst instrumental checkpoint; adds four Transformer pairs inside the mask-estimator head |
 | `roformer-model-bs-roformer-hyperace-v2-instrumental-by-pcunwa` | instrumental | HyperACE v2 instrumental checkpoint; uses the HyperACE mask-estimator variation |
 | `roformer-model-bs-roformer-hyperace-v2-vocals-by-pcunwa` | vocals | HyperACE v2 vocals checkpoint; uses the HyperACE mask-estimator variation |
 | `roformer-model-bs-roformer-leap-vocals-by-pcunwa` | vocals | Leap vocals checkpoint by pcunwa |
@@ -183,11 +184,12 @@ useful for broad stem discovery, but it is much larger than the default model an
 the upstream release notes warn that individual stems may be weaker than
 specialized models.
 
-HyperACE v2 and FNO checkpoints use model variations: the RoFormer trunk is the
-same, but the mask estimator head is different. Registry-selected HyperACE and
-FNO models load these variations automatically. The FNO variation is a bundled
+HyperACE v2, FNO, and Large-Inst checkpoints use model variations: the RoFormer
+trunk is the same, but the mask estimator head is different. Registry-selected
+models load these variations automatically. The FNO variation is a bundled
 minimal FNO1d inference implementation, so installing this package does not pull
-in the full `neuraloperator` research framework.
+in the full `neuraloperator` research framework. The Large-Inst variation adds
+four alternating time/frequency Transformer pairs before the mask MLP.
 
 > As of the 2026-07-12 re-audit, all registry entries have a live download
 > URL (see the availability note in [What This Project Will NEVER Bundle](#what-this-project-will-never-bundle)).
@@ -219,7 +221,7 @@ print(MODEL_REGISTRY.as_table())
 
 Model weights are **never bundled or committed to this repository**. Every
 checkpoint is downloaded at runtime from its registry-recorded source,
-sha256-verified against `src/bs_roformer/data/checksums.json`, and cached
+sha256-verified against `src/bs_roformer/config/checkpoints.toml`, and cached
 locally -- a mismatch deletes the file and retries instead of silently
 keeping a corrupt checkpoint.
 
@@ -240,7 +242,7 @@ read fallback, so existing downloads keep working without re-fetching.
 When `bs-roformer-infer` runs without `--model_path`/`--config_path`, the
 requested registry model (default: BS-RoFormer-SW) is looked up in the
 directories above and downloaded on first use. Downloads are verified against
-the sha256 checksums recorded in `src/bs_roformer/data/checksums.json`; a
+the sha256 checksums recorded in `src/bs_roformer/config/checkpoints.toml`; a
 mismatch deletes the file and retries instead of keeping a corrupt checkpoint.
 
 ### Manual download (offline / air-gapped)
@@ -257,8 +259,8 @@ Place it at
 (or the equivalent path under your `BS_ROFORMER_MODELS_PATH`), and inference
 will pick it up without network access.
 
-The other 9 registry models (re-hosted 2026-07-12, see CHANGELOG for full
-provenance) download from these mirrors:
+Additional registry assets (see CHANGELOG for full provenance) download from
+these mirrors:
 
 | Model | File | URL | sha256 |
 |-------|------|-----|--------|
@@ -272,12 +274,14 @@ provenance) download from these mirrors:
 | Vocals Revive by unwa | `bs_roformer_vocals_revive_unwa.ckpt` (639,326,600 bytes) | <https://huggingface.co/Politrees/UVR_resources/resolve/main/models/Roformer/BandSplit/bs_roformer_revive_by_unwa.ckpt> | `f1d7e4bfdfef07c6b2bc1d65283a7d03c3c38f8c7dbc8d729b785f93c8b8699a` |
 | Vocals Revive V2 by unwa | `bs_roformer_vocals_revive_v2_unwa.ckpt` (639,326,600 bytes) | <https://huggingface.co/Politrees/UVR_resources/resolve/main/models/Roformer/BandSplit/bs_roformer_revive_v2_by_unwa.ckpt> | `58098850c882a7472dad39f99fb8040ce6eaafe671cfe9881d89aea276bbb5f5` |
 | Vocals Revive V3e by unwa | `bs_roformer_vocals_revive_v3e_unwa.ckpt` (639,326,600 bytes) | <https://huggingface.co/Politrees/UVR_resources/resolve/main/models/Roformer/BandSplit/bs_roformer_revive_v3_by_unwa.ckpt> (hosted there without the trailing "e" — same file) | `1b0751b9a15c591407c3b77f08eb4ad3005e42e96051f3f2b39760f1130c467b` |
+| Large-Inst by pcunwa | `bs_large_v2_inst.ckpt` (238,214,371 bytes) | <https://huggingface.co/pcunwa/BS-Roformer-Large-Inst/resolve/main/bs_large_v2_inst.ckpt> | `09251ab8b5bb892414a6ab8aa80a1be30c17852d5e7f4e76943610de049e4bc4` |
+| Large-Inst by pcunwa (config) | `bs_large_v2_inst_config.yaml` (1,973 bytes) | <https://huggingface.co/pcunwa/BS-Roformer-Large-Inst/resolve/main/config.yaml> | `85d10906007df21ee48dbb86faa09205609274eb38ea224dce767e2844d0a934` |
 
 The Chorus/Male-Female-aufr33 config
 (`config_chorus_male_female_bs_roformer.yaml`) and the three Revive
 checkpoints' shared config (`config_bs_roformer_vocals_revive_unwa.yaml`) are
-also fetched from Politrees/UVR_resources — see `data/overrides.json` for the
-exact URLs and `data/checksums.json` for their hashes.
+also fetched from Politrees/UVR_resources — see `config/checkpoints.toml` for
+the exact URLs and hashes.
 
 ### Download CLI (manual path)
 
@@ -292,7 +296,7 @@ bs-roformer-download --model roformer-model-bs-roformer-sw-by-jarredou
 bs-roformer-download --model roformer-model-bs-roformer-sw-by-jarredou --output-dir ./models
 ```
 
-> **Note on download availability** (re-audited 2026-07-12): all 10 registry
+> **Note on download availability** (re-audited 2026-07-23): all registry
 > models now have live download sources. The 9 that fell back to the dead
 > upstream TRvlvr repository were re-hosted to Politrees/UVR_resources (with
 > the De-Reverb config sourced from the author's anvuew/dereverb_bs_roformer

@@ -16,6 +16,10 @@
   without adding `neuraloperator` as a dependency. The bundled minimal FNO1d
   inference surface strict-loads the checkpoint and passes a short forward probe;
   the registry now has 23 models.
+- Added pcunwa's Large-Inst instrumental checkpoint with a dedicated
+  `large_inst` MaskEstimator variation. The variation strict-loads
+  `bs_large_v2_inst.ckpt` with no missing or unexpected keys and passes a short
+  forward probe; the registry now has 24 models.
 - `BSRoformer` now passes through upstream `mlp_expansion_factor` configs to the
   MaskEstimator MLP; this is required for strict-loading the MVSep Mega 53-stem
   checkpoint (`mlp_expansion_factor: 2`).

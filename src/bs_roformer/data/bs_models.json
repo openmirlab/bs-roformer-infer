@@ -140,6 +140,13 @@
       "config": "bsrofo_fno.yaml",
       "category": "instrumental",
       "variation": "fno"
+    },
+    "roformer-model-bs-roformer-large-inst-by-pcunwa": {
+      "name": "Roformer Model: BS Roformer | Large-Inst by pcunwa",
+      "checkpoint": "bs_large_v2_inst.ckpt",
+      "config": "bs_large_v2_inst_config.yaml",
+      "category": "instrumental",
+      "variation": "large_inst"
     }
   }
 }

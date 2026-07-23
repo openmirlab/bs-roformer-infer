@@ -16,8 +16,8 @@ Given an input folder of WAV files, it produces separated stems (vocals,
 drums, bass, guitar, piano, other) plus an `*_instrumental.wav` per track.
 See README.md for the public API, CLI, and full model registry.
 
-**In scope**: inference (forward pass) only; a 23-model registry
-(`src/bs_roformer/data/bs_models.json`) spanning multi-stem, 53-stem mega,
+**In scope**: inference (forward pass) only; a 24-model registry
+(`src/bs_roformer/config/checkpoints.toml`) spanning multi-stem, 53-stem mega,
 four-stem, vocals, karaoke, instrumental, and de-reverb checkpoints; sha256-verified auto-download with a
 configurable-dir UX contract (explicit arg > `$BS_ROFORMER_MODELS_PATH` >
 `~/.cache/bs-roformer-infer`, legacy `./models` honored as a read fallback);
@@ -42,27 +42,31 @@ Bundle").
   pcunwa's instrumental FNO checkpoint. It reimplements the minimal FNO1d
   inference surface needed by the checkpoint instead of depending on the full
   `neuraloperator` research framework.
+- `src/bs_roformer/large_inst.py` -- the Large-Inst mask-estimator variation
+  used by pcunwa's `bs_large_v2_inst.ckpt`. The RoFormer trunk remains in
+  `bs_roformer.py`; this module owns the four extra time/frequency Transformer
+  pairs inserted before the mask MLP.
 - `src/bs_roformer/model_registry.py` -- `BSModel` + `MODEL_REGISTRY`,
-  backed by `data/bs_models.json` so new models don't need a code change.
+  backed by `config/checkpoints.toml` so new models don't need a code change.
   `MODEL_REGISTRY.get()` accepts slug, friendly name, or checkpoint filename.
 - `src/bs_roformer/download.py` -- checkpoint/config download, sha256
   verification, models-dir resolution, and the `bs-roformer-download` CLI.
   `ensure_model_assets()` is the auto-download entry point `inference.py`
-  calls on first use. Resolution precedence per asset: `data/overrides.json`
-  entry > packaged local file under `configs/` (configs only) >
-  `DEFAULT_CKPT_BASE_URL`/`DEFAULT_CONFIG_BASE_URL` construction (the dead
-  upstream TRvlvr repo -- see "Weights hosting" below).
+  calls on first use. Resolution precedence per asset: `config/checkpoints.toml`
+  URL > packaged local file under `configs/` (configs only) >
+  `DEFAULT_CKPT_BASE_URL`/`DEFAULT_CONFIG_BASE_URL` construction (legacy
+  fallback path only; the old TRvlvr repo is dead -- see "Weights hosting"
+  below).
 - `src/bs_roformer/inference.py` -- the `bs-roformer-infer` CLI: folder-batch
   separation, chunked overlap-add, weights auto-resolve via `download.py`.
 - `src/bs_roformer/utils.py` -- `demix_track`, `get_model_from_config`
   (converts YAML `!!python/tuple` lists back to real tuples post-safe-load).
-- `src/bs_roformer/data/bs_models.json` -- the model registry data.
-- `src/bs_roformer/data/overrides.json` -- the live patch point for dead
-  URLs: when a host 404s, edit this file first, before touching
-  `download.py`.
-- `src/bs_roformer/data/checksums.json` -- recorded sha256 + size per
-  downloadable asset; assets without a recorded hash fall back to a
-  non-empty-size check and print a warning saying so.
+- `src/bs_roformer/config/checkpoints.toml` -- the live registry source and
+  patch point for dead URLs, with recorded sha256 + size per downloadable
+  asset. Edit this file first before touching `download.py`.
+- `src/bs_roformer/data/*.json` -- legacy compatibility/audit views kept in
+  the repository but intentionally excluded from the wheel; runtime reads
+  `config/checkpoints.toml`.
 - `tools/check_weights_liveness.py` -- HEADs every registry URL; needs
   network, not run in default CI (see Testing below).
 
@@ -79,7 +83,7 @@ by outage rather than announcement:
    `TRvlvr/model_repo` GitHub Releases URL. Re-audited and re-hosted
    2026-07-12 to `Politrees/UVR_resources` on Hugging Face, cross-verified
    sha256-identical against at least one other independent host per model
-   before being written to `overrides.json` -- full per-model provenance is
+   before being written to the package registry -- full per-model provenance is
    in CHANGELOG.md's `[0.1.5]` entry. One exception: the De-Reverb model's
    *config* (not checkpoint) uses the author's
    `anvuew/dereverb_bs_roformer` copy rather than Politrees' similarly-named
@@ -100,8 +104,13 @@ by outage rather than announcement:
    construction. The pcunwa FNO instrumental checkpoint was then added with
    `variation = "fno"` after strict-loading against the bundled minimal FNO1d
    implementation and passing a short forward probe.
+5. pcunwa's Large-Inst instrumental checkpoint uses the normal trunk but adds
+   four alternating time/frequency Transformer pairs inside the MaskEstimator.
+   Registry metadata marks it with `variation = "large_inst"`; strict-loading
+   `bs_large_v2_inst.ckpt` reports zero missing and zero unexpected keys, and a
+   short forward probe returns finite output.
 
-`data/overrides.json` is the single patch point for a future re-host; it
+`config/checkpoints.toml` is the single patch point for a future re-host; it
 does not require a code change. See README's "What This Project Will NEVER
 Bundle" for the user-facing contract (auto-download, manual path, sha256
 verification, cache location).
@@ -118,7 +127,7 @@ Development below). Test files:
 - `tests/test_download.py` -- packaged-config matching and override-URL
   resolution regressions (covers two real release-blocking bugs: a filename
   mismatch that silently forced network fetches, and the jarredou outage --
-  a future silent revert of `overrides.json` to a dead URL should fail this
+  a future silent revert of the registry to a dead URL should fail this
   test, not ship quietly).
 - `tests/test_weights_ux.py` -- sha256 verification wiring (a wrong hash
   must delete the file, not ship it) and models-dir resolution precedence,
