@@ -9,9 +9,9 @@
   forward probes: ZFTurbo MUSDB18HQ, anvuew vocals/FT1/MAG/karaoke/de-reverb,
   pcunwa Leap vocals/instrumental, and becruily karaoke. The registry now has 20
   models.
-- HyperACE v2 checkpoints were probed and deliberately not added: their
-  state_dict keys contain `mask_estimators.0.segm.hyperace...`, so they require
-  a MaskEstimator variation rather than a registry-only entry.
+- Added the HyperACE MaskEstimator variation and two pcunwa HyperACE v2
+  checkpoints (`instrumental`, `vocals`). Both strict-load with no missing or
+  unexpected keys and pass a short forward probe; the registry now has 22 models.
 - `BSRoformer` now passes through upstream `mlp_expansion_factor` configs to the
   MaskEstimator MLP; this is required for strict-loading the MVSep Mega 53-stem
   checkpoint (`mlp_expansion_factor: 2`).

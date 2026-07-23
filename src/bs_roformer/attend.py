@@ -78,7 +78,7 @@ class Attend(nn.Module):
             self.cuda_config = FlashAttentionConfig(False, True, True)
 
     def flash_attn(self, q, k, v):
-        _, heads, q_len, _, k_len, is_cuda, device = *q.shape, k.shape[-2], q.is_cuda, q.device
+        is_cuda = q.is_cuda
 
         if exists(self.scale):
             default_scale = q.shape[-1] ** -0.5
@@ -106,8 +106,6 @@ class Attend(nn.Module):
         n, i, j - sequence length (base sequence length, source, target)
         d - feature dimension
         """
-
-        q_len, k_len, device = q.shape[-2], k.shape[-2], q.device
 
         scale = default(self.scale, q.shape[-1] ** -0.5)
 

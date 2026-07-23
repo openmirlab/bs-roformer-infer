@@ -440,3 +440,49 @@ name = "config_bs_roformer_vocals_revive_unwa.yaml"
 url = "https://huggingface.co/Politrees/UVR_resources/resolve/main/models/Roformer/BandSplit/config_bs_roformer_revive_by_unwa.yaml"
 sha256 = "6b9d5fb6aeda6b0941f937e4e4883643e3187331ff403fb820c7aa6af4b02dbb"
 size = 2382
+
+[models.roformer-model-bs-roformer-hyperace-v2-instrumental-by-pcunwa]
+name = "Roformer Model: BS Roformer | HyperACE v2 Instrumental by pcunwa"
+category = "instrumental"
+variation = "hyperace"
+license = "not-reviewed"
+provenance = "pcunwa/BS-Roformer-HyperACE Hugging Face repository"
+source_revision = "2025-12-20"
+updated_at = "2026-07-23"
+
+[[models.roformer-model-bs-roformer-hyperace-v2-instrumental-by-pcunwa.artifacts]]
+kind = "checkpoint"
+name = "bs_roformer_inst_hyperacev2.ckpt"
+url = "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_inst/bs_roformer_inst_hyperacev2.ckpt"
+sha256 = "4d61178ef966d2b4e9ad456ffbbc6fd5b2828df07a7af32931142c1a5ff1fe6f"
+size = 288725646
+
+[[models.roformer-model-bs-roformer-hyperace-v2-instrumental-by-pcunwa.artifacts]]
+kind = "config"
+name = "hyperace_v2_inst_config.yaml"
+url = "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_inst/config.yaml"
+sha256 = "85d10906007df21ee48dbb86faa09205609274eb38ea224dce767e2844d0a934"
+size = 1973
+
+[models.roformer-model-bs-roformer-hyperace-v2-vocals-by-pcunwa]
+name = "Roformer Model: BS Roformer | HyperACE v2 Vocals by pcunwa"
+category = "vocals"
+variation = "hyperace"
+license = "not-reviewed"
+provenance = "pcunwa/BS-Roformer-HyperACE Hugging Face repository"
+source_revision = "2025-12-20"
+updated_at = "2026-07-23"
+
+[[models.roformer-model-bs-roformer-hyperace-v2-vocals-by-pcunwa.artifacts]]
+kind = "checkpoint"
+name = "bs_roformer_voc_hyperacev2.ckpt"
+url = "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_voc/bs_roformer_voc_hyperacev2.ckpt"
+sha256 = "54cf516f621f2f460bf660ed137e244b8931bf7a2ce85ddceecff816dbc4d668"
+size = 288724430
+
+[[models.roformer-model-bs-roformer-hyperace-v2-vocals-by-pcunwa.artifacts]]
+kind = "config"
+name = "hyperace_v2_voc_config.yaml"
+url = "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_voc/config.yaml"
+sha256 = "033e57abee226a480ef410e0631b9fe00e8b7bc9a3bb5fe55659d0b43a238701"
+size = 1969

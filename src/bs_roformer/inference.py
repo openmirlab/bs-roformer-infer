@@ -15,7 +15,8 @@ writes, derived from the loaded config and successful writes rather than guessed
 registry metadata.
 
 Reads: .utils (demix_track, get_model_from_config), .download (ensure_model_assets),
-.model_registry (DEFAULT_MODEL), yaml, ml_collections, torch
+.checkpoints (checkpoint_metadata), .model_registry (DEFAULT_MODEL), yaml,
+ml_collections, torch
 """
 
 from __future__ import annotations
@@ -35,6 +36,7 @@ import yaml
 from ml_collections import ConfigDict
 from tqdm import tqdm
 
+from .checkpoints import checkpoint_metadata
 from .download import ensure_model_assets
 from .model_registry import DEFAULT_MODEL
 from .utils import demix_track, get_model_from_config
@@ -224,7 +226,11 @@ def proc_folder(args) -> OutputManifest:
     with open(args.config_path) as f:
         config = ConfigDict(yaml.load(f, Loader=SafeLoaderWithTuple))
 
-    model = get_model_from_config(args.model_type, config)
+    model = get_model_from_config(
+        args.model_type,
+        config,
+        model_variation=getattr(args, "model_variation", None),
+    )
     print(f"Using model weights: {args.model_path}")
     model.load_state_dict(torch.load(args.model_path, map_location=torch.device("cpu")))
 
@@ -251,11 +257,14 @@ def _resolve_model_assets(args: argparse.Namespace, parser: argparse.ArgumentPar
         if getattr(args, "model", None):
             parser.error("--model selects a registry model to auto-resolve; "
                          "it cannot be combined with explicit --model_path/--config_path")
+        args.model_variation = None
         return
     model_key = getattr(args, "model", None) or DEFAULT_MODEL
     args.model_path, args.config_path = ensure_model_assets(
         model_key, models_dir=getattr(args, "models_dir", None)
     )
+    args.model = model_key
+    args.model_variation = checkpoint_metadata(model_key).get("variation")
 
 
 def _select_device(args: argparse.Namespace) -> torch.device:

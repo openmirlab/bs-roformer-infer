@@ -119,6 +119,20 @@
       "checkpoint": "bs_roformer_vocals_revive_v3e_unwa.ckpt",
       "config": "config_bs_roformer_vocals_revive_unwa.yaml",
       "category": "vocals"
+    },
+    "roformer-model-bs-roformer-hyperace-v2-instrumental-by-pcunwa": {
+      "name": "Roformer Model: BS Roformer | HyperACE v2 Instrumental by pcunwa",
+      "checkpoint": "bs_roformer_inst_hyperacev2.ckpt",
+      "config": "hyperace_v2_inst_config.yaml",
+      "category": "instrumental",
+      "variation": "hyperace"
+    },
+    "roformer-model-bs-roformer-hyperace-v2-vocals-by-pcunwa": {
+      "name": "Roformer Model: BS Roformer | HyperACE v2 Vocals by pcunwa",
+      "checkpoint": "bs_roformer_voc_hyperacev2.ckpt",
+      "config": "hyperace_v2_voc_config.yaml",
+      "category": "vocals",
+      "variation": "hyperace"
     }
   }
 }

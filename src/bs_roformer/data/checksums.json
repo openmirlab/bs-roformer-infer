@@ -145,6 +145,22 @@
     "bs_roformer_vocals_revive_v3e_unwa.ckpt": {
       "sha256": "1b0751b9a15c591407c3b77f08eb4ad3005e42e96051f3f2b39760f1130c467b",
       "size": 639326600
+    },
+    "bs_roformer_inst_hyperacev2.ckpt": {
+      "sha256": "4d61178ef966d2b4e9ad456ffbbc6fd5b2828df07a7af32931142c1a5ff1fe6f",
+      "size": 288725646
+    },
+    "hyperace_v2_inst_config.yaml": {
+      "sha256": "85d10906007df21ee48dbb86faa09205609274eb38ea224dce767e2844d0a934",
+      "size": 1973
+    },
+    "bs_roformer_voc_hyperacev2.ckpt": {
+      "sha256": "54cf516f621f2f460bf660ed137e244b8931bf7a2ce85ddceecff816dbc4d668",
+      "size": 288724430
+    },
+    "hyperace_v2_voc_config.yaml": {
+      "sha256": "033e57abee226a480ef410e0631b9fe00e8b7bc9a3bb5fe55659d0b43a238701",
+      "size": 1969
     }
   }
 }

@@ -39,6 +39,7 @@ class BSModel:
     checkpoint: str
     config: str
     category: str
+    variation: str = "mlp"
 
     @property
     def default_sources(self) -> List[str]:
@@ -69,6 +70,7 @@ class ModelRegistry:
                 checkpoint=next(a["name"] for a in meta["artifacts"] if a["kind"] == "checkpoint"),
                 config=next(a["name"] for a in meta["artifacts"] if a["kind"] == "config"),
                 category=meta.get("category", "general"),
+                variation=meta.get("variation", "mlp"),
             )
             self._models[slug] = model
         # simple lookup by normalized name or checkpoint

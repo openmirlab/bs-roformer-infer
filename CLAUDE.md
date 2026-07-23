@@ -16,7 +16,7 @@ Given an input folder of WAV files, it produces separated stems (vocals,
 drums, bass, guitar, piano, other) plus an `*_instrumental.wav` per track.
 See README.md for the public API, CLI, and full model registry.
 
-**In scope**: inference (forward pass) only; a 20-model registry
+**In scope**: inference (forward pass) only; a 22-model registry
 (`src/bs_roformer/data/bs_models.json`) spanning multi-stem, 53-stem mega,
 four-stem, vocals, karaoke, instrumental, and de-reverb checkpoints; sha256-verified auto-download with a
 configurable-dir UX contract (explicit arg > `$BS_ROFORMER_MODELS_PATH` >
@@ -33,7 +33,11 @@ Bundle").
 
 - `src/bs_roformer/bs_roformer.py`, `attend.py` -- the BS-RoFormer model
   architecture (from lucidrains/BS-RoFormer), with upstream-compatible
-  `mlp_expansion_factor` pass-through for MaskEstimator checkpoint parity.
+  `mlp_expansion_factor` pass-through for MaskEstimator checkpoint parity and
+  explicit `mask_estimator_variant` selection for supported architecture heads.
+- `src/bs_roformer/hyperace.py` -- the HyperACE mask-estimator variation used by
+  pcunwa HyperACE v2 checkpoints. The RoFormer trunk remains in `bs_roformer.py`;
+  this module owns only the segmentation head and its helper blocks.
 - `src/bs_roformer/model_registry.py` -- `BSModel` + `MODEL_REGISTRY`,
   backed by `data/bs_models.json` so new models don't need a code change.
   `MODEL_REGISTRY.get()` accepts slug, friendly name, or checkpoint filename.
@@ -60,7 +64,7 @@ Bundle").
 
 ## Weights hosting (org constitution article 4)
 
-All 20 registry models download from third-party hosts at runtime; none are
+All 22 registry models download from third-party hosts at runtime; none are
 committed to this repo. Provenance has moved twice already, both discovered
 by outage rather than announcement:
 
@@ -83,11 +87,14 @@ by outage rather than announcement:
    only when `mlp_expansion_factor: 2` reaches `MaskEstimator`. It is
    memory-heavy; upstream recommends at least 16GB VRAM and notes individual
    stems may be weaker than specialized models.
-4. The 2026-07-23 BS-RoFormer scout added only registry-only checkpoints that
+4. The 2026-07-23 BS-RoFormer scout added registry-only checkpoints that
    strict-loaded and passed a short forward probe: ZFTurbo MUSDB18HQ, anvuew
    vocals/MAG/karaoke/de-reverb, pcunwa Leap vocals/instrumental, and becruily
-   karaoke. HyperACE and FNO checkpoints were explicitly not added because their
-   state_dict keys show different MaskEstimator variants.
+   karaoke. HyperACE v2 was then added as a supported MaskEstimator variation:
+   registry metadata marks the two pcunwa HyperACE v2 checkpoints with
+   `variation = "hyperace"`, which the CLI and clean API inject into model
+   construction. FNO checkpoints remain excluded because their variation is still
+   unsupported.
 
 `data/overrides.json` is the single patch point for a future re-host; it
 does not require a code change. See README's "What This Project Will NEVER

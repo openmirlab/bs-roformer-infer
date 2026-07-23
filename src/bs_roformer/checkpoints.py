@@ -1,6 +1,5 @@
 """Package-owned checkpoint metadata and validation."""
 from pathlib import Path
-import hashlib
 import tomllib
 
 def checkpoint_config_path() -> Path:

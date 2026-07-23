@@ -75,7 +75,11 @@ class BSRoformerSession:
                 )
             with self.config_path.open() as handle:
                 self._config = ConfigDict(yaml.load(handle, Loader=SafeLoaderWithTuple))
-            self._model = get_model_from_config("bs_roformer", self._config)
+            self._model = get_model_from_config(
+                "bs_roformer",
+                self._config,
+                model_variation=self._metadata().get("variation"),
+            )
 
             import torch
 

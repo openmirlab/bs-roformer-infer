@@ -9,8 +9,11 @@ learned_value_residual_mix feature: existing published checkpoints were trained
 without them, and enabling either would silently break state_dict compatibility.
 Upstream configs may still vary the MaskEstimator MLP width through
 ``mlp_expansion_factor``; this parameter is passed through for checkpoint parity.
+HyperACE checkpoints keep the same trunk but add a segmentation head inside the
+MaskEstimator, selected explicitly through ``mask_estimator_variant``.
 
-Reads: .attend.Attend, rotary_embedding_torch.RotaryEmbedding, beartype, einops, torch
+Reads: .attend.Attend, .hyperace.HyperACEMaskEstimator,
+rotary_embedding_torch.RotaryEmbedding, beartype, einops, torch
 """
 
 from __future__ import annotations
@@ -277,6 +280,35 @@ class MaskEstimator(Module):
 
         return torch.cat(outs, dim = -1)
 
+
+def _create_mask_estimator(
+    *,
+    variant,
+    dim,
+    dim_inputs,
+    depth,
+    audio_channels,
+    mlp_expansion_factor,
+):
+    if variant == "mlp":
+        return MaskEstimator(
+            dim = dim,
+            dim_inputs = dim_inputs,
+            depth = depth,
+            mlp_expansion_factor = mlp_expansion_factor,
+        )
+    if variant == "hyperace":
+        from .hyperace import HyperACEMaskEstimator
+
+        return HyperACEMaskEstimator(
+            dim = dim,
+            dim_inputs = dim_inputs,
+            depth = depth,
+            audio_channels = audio_channels,
+            mlp_expansion_factor = mlp_expansion_factor,
+        )
+    raise ValueError(f"unknown mask_estimator_variant: {variant!r}")
+
 # main class
 
 DEFAULT_FREQS_PER_BANDS = (
@@ -324,13 +356,15 @@ class BSRoformer(Module):
         multi_stft_hop_size = 147,
         multi_stft_normalized = False,
         multi_stft_window_fn: Callable = torch.hann_window,
-        mlp_expansion_factor = 4
+        mlp_expansion_factor = 4,
+        mask_estimator_variant = "mlp",
     ):
         super().__init__()
 
         self.stereo = stereo
         self.audio_channels = 2 if stereo else 1
         self.num_stems = num_stems
+        self.mask_estimator_variant = mask_estimator_variant
 
         # Note: hyper_connections expand/reduce streams are NOT used because
         # existing checkpoints were trained without them.
@@ -408,10 +442,12 @@ class BSRoformer(Module):
         self.mask_estimators = nn.ModuleList([])
 
         for _ in range(num_stems):
-            mask_estimator = MaskEstimator(
+            mask_estimator = _create_mask_estimator(
+                variant = mask_estimator_variant,
                 dim = dim,
                 dim_inputs = freqs_per_bands_with_complex,
                 depth = mask_estimator_depth,
+                audio_channels = self.audio_channels,
                 mlp_expansion_factor = mlp_expansion_factor
             )
 

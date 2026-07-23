@@ -3,9 +3,9 @@
 get_model_from_config filters a raw training-config dict down to the keys BSRoformer's
 constructor actually accepts (training configs carry extra fields BSRoformer doesn't
 take) and converts list-typed params back to the tuples the type hints require.
-Architecture-affecting inference params such as ``mlp_expansion_factor`` must stay
-in this allowlist so downloaded checkpoints build the same tensor shapes they were
-trained with.
+Architecture-affecting inference params such as ``mlp_expansion_factor`` and
+``mask_estimator_variant`` must stay in this allowlist so downloaded checkpoints
+build the same tensor shapes they were trained with.
 demix_track splits long mixtures into overlapping chunks, applies a linear
 fade-in/out window per chunk to avoid audible seams at chunk boundaries, and
 normalizes the result by the accumulated window weight -- this is what lets
@@ -21,10 +21,12 @@ import sys
 import torch.nn as nn
 
 
-def get_model_from_config(model_type, config):
+def get_model_from_config(model_type, config, *, model_variation=None):
     if model_type == 'bs_roformer':
         from . import BSRoformer
         model_config = dict(config.model)
+        if model_variation is not None and "mask_estimator_variant" not in model_config:
+            model_config["mask_estimator_variant"] = model_variation
 
         # Convert list to tuple for parameters that require tuple type hints
         tuple_params = ['multi_stft_resolutions_window_sizes', 'freqs_per_bands']
@@ -41,7 +43,8 @@ def get_model_from_config(model_type, config):
             'stft_win_length', 'stft_normalized', 'zero_dc', 'stft_window_fn',
             'mask_estimator_depth', 'multi_stft_resolution_loss_weight',
             'multi_stft_resolutions_window_sizes', 'multi_stft_hop_size',
-            'multi_stft_normalized', 'multi_stft_window_fn', 'mlp_expansion_factor'
+            'multi_stft_normalized', 'multi_stft_window_fn', 'mlp_expansion_factor',
+            'mask_estimator_variant',
         }
         model_config = {k: v for k, v in model_config.items() if k in valid_params}
 

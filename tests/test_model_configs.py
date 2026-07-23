@@ -119,6 +119,40 @@ class TestModelInstantiation:
 
         assert tuple(first_mask_linear.weight.shape) == (16, 8)
 
+    def test_hyperace_variation_selects_segment_head(self):
+        """Registry metadata can select the HyperACE MaskEstimator variation."""
+        config = ConfigDict(
+            {
+                "model": {
+                    "dim": 8,
+                    "depth": 1,
+                    "stereo": True,
+                    "num_stems": 1,
+                    "time_transformer_depth": 1,
+                    "freq_transformer_depth": 1,
+                    "freqs_per_bands": [512, 513],
+                    "dim_head": 4,
+                    "heads": 1,
+                    "dim_freqs_in": 1025,
+                    "stft_n_fft": 2048,
+                    "stft_hop_length": 512,
+                    "stft_win_length": 2048,
+                    "mask_estimator_depth": 2,
+                    "mlp_expansion_factor": 4,
+                },
+                "training": {"target_instrument": "vocals", "instruments": ["vocals"]},
+            }
+        )
+
+        model = get_model_from_config(
+            "bs_roformer",
+            config,
+            model_variation="hyperace",
+        )
+
+        assert model.mask_estimator_variant == "hyperace"
+        assert hasattr(model.mask_estimators[0], "segm")
+
 
 def main():
     """Run tests directly without pytest."""

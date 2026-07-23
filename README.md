@@ -87,7 +87,7 @@ Also available as a preprint: [arXiv:2309.02612](https://arxiv.org/abs/2309.0261
 ## Scope
 
 **In scope**: inference (forward pass) with the BS-RoFormer architecture; an
-20-model registry spanning multi-stem, 53-stem mega, four-stem, vocals, karaoke,
+22-model registry spanning multi-stem, 53-stem mega, four-stem, vocals, karaoke,
 instrumental, and de-reverb
 checkpoints; automatic, manual, and configurable-directory checkpoint
 management with sha256 verification; a standalone download CLI.
@@ -156,6 +156,8 @@ print(DEFAULT_MODEL)  # "roformer-model-bs-roformer-sw-by-jarredou"
 | **`roformer-model-bs-roformer-sw-by-jarredou`** | multi-stem | **Recommended** - 6-stem separation (vocals, drums, bass, guitar, piano, other) |
 | `roformer-model-bs-roformer-mvsep-mega-53-stems` | mega-stem | MVSep Mega 53-stem model by ZFTurbo; memory-heavy, upstream recommends at least 16GB VRAM |
 | `roformer-model-bs-roformer-musdb18hq-by-zfturbo` | four-stem | MUSDB18HQ 4-stem model from ZFTurbo's v1.0.12 release |
+| `roformer-model-bs-roformer-hyperace-v2-instrumental-by-pcunwa` | instrumental | HyperACE v2 instrumental checkpoint; uses the HyperACE mask-estimator variation |
+| `roformer-model-bs-roformer-hyperace-v2-vocals-by-pcunwa` | vocals | HyperACE v2 vocals checkpoint; uses the HyperACE mask-estimator variation |
 | `roformer-model-bs-roformer-leap-vocals-by-pcunwa` | vocals | Leap vocals checkpoint by pcunwa |
 | `roformer-model-bs-roformer-leap-instrumental-by-pcunwa` | instrumental | Leap instrumental checkpoint by pcunwa |
 | `roformer-model-bs-roformer-karaoke-by-anvuew` | karaoke | Karaoke vocals checkpoint by anvuew |
@@ -180,9 +182,11 @@ useful for broad stem discovery, but it is much larger than the default model an
 the upstream release notes warn that individual stems may be weaker than
 specialized models.
 
-HyperACE and FNO-flavored BS-RoFormer checkpoints are not listed here yet because
-their checkpoint keys show different mask-estimator heads; those require a model
-variation rather than a registry-only addition.
+HyperACE v2 checkpoints use a model variation: the RoFormer trunk is the same,
+but the mask estimator includes a HyperACE segmentation head. Registry-selected
+HyperACE models load this variation automatically. FNO-flavored checkpoints are
+still not listed because they require a different variation that has not been
+implemented.
 
 > As of the 2026-07-12 re-audit, all registry entries have a live download
 > URL (see the availability note in [What This Project Will NEVER Bundle](#what-this-project-will-never-bundle)).
