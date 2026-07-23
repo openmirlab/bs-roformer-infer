@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Added the MVSep Mega 53-stem BS-RoFormer checkpoint from
+  `ZFTurbo/Music-Source-Separation-Training` release `v1.0.21`, with recorded
+  SHA-256/size metadata for both checkpoint and config.
+- Added 9 registry-only BS-RoFormer checkpoints after strict-load and short
+  forward probes: ZFTurbo MUSDB18HQ, anvuew vocals/FT1/MAG/karaoke/de-reverb,
+  pcunwa Leap vocals/instrumental, and becruily karaoke. The registry now has 20
+  models.
+- HyperACE v2 checkpoints were probed and deliberately not added: their
+  state_dict keys contain `mask_estimators.0.segm.hyperace...`, so they require
+  a MaskEstimator variation rather than a registry-only entry.
+- `BSRoformer` now passes through upstream `mlp_expansion_factor` configs to the
+  MaskEstimator MLP; this is required for strict-loading the MVSep Mega 53-stem
+  checkpoint (`mlp_expansion_factor: 2`).
 - Legacy `./models` assets remain a read fallback after the explicit/env/default
   cache target; fallback tests isolate the default cache from ambient state.
 - Explicit device tokens now validate CUDA availability/index instead of falling

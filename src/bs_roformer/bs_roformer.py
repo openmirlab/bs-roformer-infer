@@ -7,6 +7,8 @@ than full 2D attention over the spectrogram), then reconstructs per-stem masks
 NOT use hyper_connections multi-residual-stream wrappers (see the NOTE below) or the
 learned_value_residual_mix feature: existing published checkpoints were trained
 without them, and enabling either would silently break state_dict compatibility.
+Upstream configs may still vary the MaskEstimator MLP width through
+``mlp_expansion_factor``; this parameter is passed through for checkpoint parity.
 
 Reads: .attend.Attend, rotary_embedding_torch.RotaryEmbedding, beartype, einops, torch
 """
@@ -257,8 +259,6 @@ class MaskEstimator(Module):
         dim_hidden = dim * mlp_expansion_factor
 
         for dim_in in dim_inputs:
-            net = []
-
             mlp = nn.Sequential(
                 MLP(dim, dim_in * 2, dim_hidden = dim_hidden, depth = depth),
                 nn.GLU(dim = -1)
@@ -323,7 +323,8 @@ class BSRoformer(Module):
         multi_stft_resolutions_window_sizes: tuple[int, ...] = (4096, 2048, 1024, 512, 256),
         multi_stft_hop_size = 147,
         multi_stft_normalized = False,
-        multi_stft_window_fn: Callable = torch.hann_window
+        multi_stft_window_fn: Callable = torch.hann_window,
+        mlp_expansion_factor = 4
     ):
         super().__init__()
 
@@ -410,7 +411,8 @@ class BSRoformer(Module):
             mask_estimator = MaskEstimator(
                 dim = dim,
                 dim_inputs = freqs_per_bands_with_complex,
-                depth = mask_estimator_depth
+                depth = mask_estimator_depth,
+                mlp_expansion_factor = mlp_expansion_factor
             )
 
             self.mask_estimators.append(mask_estimator)

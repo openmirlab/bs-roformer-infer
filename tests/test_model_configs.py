@@ -89,6 +89,36 @@ class TestModelInstantiation:
             "Model param should be tuple after conversion"
         )
 
+    def test_mlp_expansion_factor_reaches_mask_estimator(self):
+        """Downloaded configs can vary the mask-estimator MLP width."""
+        config = ConfigDict(
+            {
+                "model": {
+                    "dim": 8,
+                    "depth": 1,
+                    "stereo": True,
+                    "num_stems": 1,
+                    "time_transformer_depth": 1,
+                    "freq_transformer_depth": 1,
+                    "freqs_per_bands": [512, 513],
+                    "dim_head": 4,
+                    "heads": 1,
+                    "dim_freqs_in": 1025,
+                    "stft_n_fft": 2048,
+                    "stft_hop_length": 512,
+                    "stft_win_length": 2048,
+                    "mask_estimator_depth": 2,
+                    "mlp_expansion_factor": 2,
+                },
+                "training": {"target_instrument": "vocals", "instruments": ["vocals"]},
+            }
+        )
+
+        model = get_model_from_config("bs_roformer", config)
+        first_mask_linear = model.mask_estimators[0].to_freqs[0][0][0]
+
+        assert tuple(first_mask_linear.weight.shape) == (16, 8)
+
 
 def main():
     """Run tests directly without pytest."""

@@ -30,6 +30,66 @@
       "config": "BS-Rofo-SW-Fixed.yaml",
       "category": "multi-stem"
     },
+    "roformer-model-bs-roformer-mvsep-mega-53-stems": {
+      "name": "Roformer Model: BS Roformer | MVSep Mega 53 Stems by ZFTurbo",
+      "checkpoint": "mvsep_mega_model_bs_roformer_53_stems_v1.ckpt",
+      "config": "mvsep_mega_model_bs_roformer_53_stems.yaml",
+      "category": "mega-stem"
+    },
+    "roformer-model-bs-roformer-musdb18hq-by-zfturbo": {
+      "name": "Roformer Model: BS Roformer | MUSDB18HQ by ZFTurbo",
+      "checkpoint": "model_bs_roformer_ep_17_sdr_9.6568.ckpt",
+      "config": "config_bs_roformer_384_8_2_485100.yaml",
+      "category": "four-stem"
+    },
+    "roformer-model-bs-roformer-vocals-by-anvuew": {
+      "name": "Roformer Model: BS Roformer | Vocals by anvuew",
+      "checkpoint": "bs_roformer_anvuew_sdr_12.45.ckpt",
+      "config": "anvuew_bs_roformer_config.yaml",
+      "category": "vocals"
+    },
+    "roformer-model-bs-roformer-vocals-ft1-by-anvuew": {
+      "name": "Roformer Model: BS Roformer | Vocals FT1 by anvuew",
+      "checkpoint": "bs_roformer_ft1_anvuew_sdr_12.55.ckpt",
+      "config": "anvuew_bs_roformer_config.yaml",
+      "category": "vocals"
+    },
+    "roformer-model-bs-roformer-leap-instrumental-by-pcunwa": {
+      "name": "Roformer Model: BS Roformer | Leap Instrumental by pcunwa",
+      "checkpoint": "bs_roformer_leap_inst.ckpt",
+      "config": "bs_leap_inst_conf.yaml",
+      "category": "instrumental"
+    },
+    "roformer-model-bs-roformer-leap-vocals-by-pcunwa": {
+      "name": "Roformer Model: BS Roformer | Leap Vocals by pcunwa",
+      "checkpoint": "bs_roformer_leap_voc.ckpt",
+      "config": "bs_leap_voc_conf.yaml",
+      "category": "vocals"
+    },
+    "roformer-model-bs-roformer-karaoke-by-anvuew": {
+      "name": "Roformer Model: BS Roformer | Karaoke by anvuew",
+      "checkpoint": "karaoke_bs_roformer_anvuew.ckpt",
+      "config": "karaoke_bs_roformer_anvuew.yaml",
+      "category": "karaoke"
+    },
+    "roformer-model-bs-roformer-karaoke-by-becruily": {
+      "name": "Roformer Model: BS Roformer | Karaoke by becruily",
+      "checkpoint": "bs_roformer_karaoke_frazer_becruily.ckpt",
+      "config": "config_karaoke_frazer_becruily.yaml",
+      "category": "karaoke"
+    },
+    "roformer-model-bs-roformer-dereverb-by-anvuew-sdr-22-5050": {
+      "name": "Roformer Model: BS Roformer | De-Reverb by anvuew SDR 22.5050",
+      "checkpoint": "dereverb_bs_roformer_anvuew_sdr_22.5050.ckpt",
+      "config": "dereverb_bs_roformer_anvuew.yaml",
+      "category": "dereverb"
+    },
+    "roformer-model-bs-roformer-mag-vocals-by-anvuew": {
+      "name": "Roformer Model: BS Roformer | MAG Vocals by anvuew",
+      "checkpoint": "bs_roformer_mag_anvuew.ckpt",
+      "config": "bs_roformer_mag_anvuew.yaml",
+      "category": "vocals"
+    },
     "roformer-model-bs-roformer-vocals-by-gabox": {
       "name": "Roformer Model: BS Roformer | Vocals by Gabox",
       "checkpoint": "bs_roformer_vocals_gabox.ckpt",

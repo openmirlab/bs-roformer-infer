@@ -19,6 +19,18 @@ from typing import Dict, List, Optional
 _PACKAGE_ROOT = Path(__file__).resolve().parent
 
 
+MVSep_MEGA_53_STEMS = [
+    "accordion", "acoustic-guitar", "back-vocal", "banjo", "bass", "bassoon",
+    "bells", "bowed_strings", "brass", "cello", "clarinet", "congas",
+    "digital-piano", "dobro", "double-bass", "drums", "electric-guitar",
+    "flute", "french-horn", "glockenspiel", "guitar", "harmonica", "harp",
+    "harpsichord", "hh", "keys", "kick", "lead-vocal", "mandolin", "marimba",
+    "oboe", "organ", "percussion", "piano", "saxophone", "sitar", "snare",
+    "strings", "synth", "tambourine", "timpani", "toms", "triangle",
+    "trombone", "trumpet", "tuba", "ukulele", "viola", "violin", "vocal",
+    "wind", "wind-chimes", "woodwind",
+]
+
 
 @dataclass(frozen=True)
 class BSModel:
@@ -30,6 +42,10 @@ class BSModel:
 
     @property
     def default_sources(self) -> List[str]:
+        if self.category == "mega-stem":
+            return list(MVSep_MEGA_53_STEMS)
+        if self.category == "four-stem":
+            return ["drums", "bass", "other", "vocals"]
         if self.category == "multi-stem":
             return ["bass", "drums", "other", "vocals", "guitar", "piano"]
         if self.category in {"instrumental"}:

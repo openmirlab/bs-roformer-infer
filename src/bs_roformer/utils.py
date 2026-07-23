@@ -3,6 +3,9 @@
 get_model_from_config filters a raw training-config dict down to the keys BSRoformer's
 constructor actually accepts (training configs carry extra fields BSRoformer doesn't
 take) and converts list-typed params back to the tuples the type hints require.
+Architecture-affecting inference params such as ``mlp_expansion_factor`` must stay
+in this allowlist so downloaded checkpoints build the same tensor shapes they were
+trained with.
 demix_track splits long mixtures into overlapping chunks, applies a linear
 fade-in/out window per chunk to avoid audible seams at chunk boundaries, and
 normalizes the result by the accumulated window weight -- this is what lets
@@ -38,7 +41,7 @@ def get_model_from_config(model_type, config):
             'stft_win_length', 'stft_normalized', 'zero_dc', 'stft_window_fn',
             'mask_estimator_depth', 'multi_stft_resolution_loss_weight',
             'multi_stft_resolutions_window_sizes', 'multi_stft_hop_size',
-            'multi_stft_normalized', 'multi_stft_window_fn'
+            'multi_stft_normalized', 'multi_stft_window_fn', 'mlp_expansion_factor'
         }
         model_config = {k: v for k, v in model_config.items() if k in valid_params}
 
@@ -92,10 +95,8 @@ def demix_track(config, model, mix, device, first_chunk_time=None):
             num_chunks = (total_length + step - 1) // step
 
             if first_chunk_time is None:
-                start_time = time.time()
                 first_chunk = True
             else:
-                start_time = None
                 first_chunk = False
 
             while i < total_length:

@@ -111,6 +111,226 @@ url = "https://huggingface.co/enerjazzer/BS-ROFO-SW-Fixed/resolve/main/BS-Rofo-S
 sha256 = "f9fada9f94e5ba2d2e4600196299459294bc5f532b314c209cc156ac63e4329b"
 size = 4613
 
+[models.roformer-model-bs-roformer-mvsep-mega-53-stems]
+name = "Roformer Model: BS Roformer | MVSep Mega 53 Stems by ZFTurbo"
+category = "mega-stem"
+license = "not-reviewed"
+provenance = "ZFTurbo/Music-Source-Separation-Training GitHub release v1.0.21"
+source_revision = "v1.0.21"
+updated_at = "2026-07-23"
+
+[[models.roformer-model-bs-roformer-mvsep-mega-53-stems.artifacts]]
+kind = "checkpoint"
+name = "mvsep_mega_model_bs_roformer_53_stems_v1.ckpt"
+url = "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v1.0.21/mvsep_mega_model_bs_roformer_53_stems_v1.ckpt"
+sha256 = "c62820893bbf86d4e734f966bd142d9157cfc8bb8e79e9d8f9ea553f3ff3519f"
+size = 1368919887
+
+[[models.roformer-model-bs-roformer-mvsep-mega-53-stems.artifacts]]
+kind = "config"
+name = "mvsep_mega_model_bs_roformer_53_stems.yaml"
+url = "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v1.0.21/mvsep_mega_model_bs_roformer_53_stems.yaml"
+sha256 = "7e198062a251587088adb91215a4f44ab59e67bd62fcc805cf54d6e7dfc51103"
+size = 4184
+
+[models.roformer-model-bs-roformer-musdb18hq-by-zfturbo]
+name = "Roformer Model: BS Roformer | MUSDB18HQ by ZFTurbo"
+category = "four-stem"
+license = "not-reviewed"
+provenance = "ZFTurbo/Music-Source-Separation-Training GitHub release v1.0.12"
+source_revision = "v1.0.12"
+updated_at = "2026-07-23"
+
+[[models.roformer-model-bs-roformer-musdb18hq-by-zfturbo.artifacts]]
+kind = "checkpoint"
+name = "model_bs_roformer_ep_17_sdr_9.6568.ckpt"
+url = "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v1.0.12/model_bs_roformer_ep_17_sdr_9.6568.ckpt"
+sha256 = "3e9daecd70aaed5b5a0d1f861cc4d77eaa45afb3fc6301b1cf32c1be0f5868fb"
+size = 527385512
+
+[[models.roformer-model-bs-roformer-musdb18hq-by-zfturbo.artifacts]]
+kind = "config"
+name = "config_bs_roformer_384_8_2_485100.yaml"
+url = "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v1.0.12/config_bs_roformer_384_8_2_485100.yaml"
+sha256 = "d8afb980318d0c08b9c2e24a7adc00d4f3150320c127a7e4de861800d1321939"
+size = 4566
+
+[models.roformer-model-bs-roformer-vocals-by-anvuew]
+name = "Roformer Model: BS Roformer | Vocals by anvuew"
+category = "vocals"
+license = "GPL-3.0"
+provenance = "anvuew/BS-RoFormer Hugging Face repository"
+source_revision = "2026-04-17"
+updated_at = "2026-07-23"
+
+[[models.roformer-model-bs-roformer-vocals-by-anvuew.artifacts]]
+kind = "checkpoint"
+name = "bs_roformer_anvuew_sdr_12.45.ckpt"
+url = "https://huggingface.co/anvuew/BS-RoFormer/resolve/main/bs_roformer_anvuew_sdr_12.45.ckpt"
+sha256 = "8d0f72ad0ac4154f5f4c3cdf230880bbb9a5bd01dc610241a2abfe787f0d7784"
+size = 204485563
+
+[[models.roformer-model-bs-roformer-vocals-by-anvuew.artifacts]]
+kind = "config"
+name = "anvuew_bs_roformer_config.yaml"
+url = "https://huggingface.co/anvuew/BS-RoFormer/resolve/main/config.yaml"
+sha256 = "033e57abee226a480ef410e0631b9fe00e8b7bc9a3bb5fe55659d0b43a238701"
+size = 1969
+
+[models.roformer-model-bs-roformer-vocals-ft1-by-anvuew]
+name = "Roformer Model: BS Roformer | Vocals FT1 by anvuew"
+category = "vocals"
+license = "GPL-3.0"
+provenance = "anvuew/BS-RoFormer Hugging Face repository"
+source_revision = "2026-04-17"
+updated_at = "2026-07-23"
+
+[[models.roformer-model-bs-roformer-vocals-ft1-by-anvuew.artifacts]]
+kind = "checkpoint"
+name = "bs_roformer_ft1_anvuew_sdr_12.55.ckpt"
+url = "https://huggingface.co/anvuew/BS-RoFormer/resolve/main/bs_roformer_ft1_anvuew_sdr_12.55.ckpt"
+sha256 = "60347271e8493fdff28ef558c3b2297afb869a1f4462594ed548038264bec395"
+size = 204493312
+
+[[models.roformer-model-bs-roformer-vocals-ft1-by-anvuew.artifacts]]
+kind = "config"
+name = "anvuew_bs_roformer_config.yaml"
+url = "https://huggingface.co/anvuew/BS-RoFormer/resolve/main/config.yaml"
+sha256 = "033e57abee226a480ef410e0631b9fe00e8b7bc9a3bb5fe55659d0b43a238701"
+size = 1969
+
+[models.roformer-model-bs-roformer-leap-instrumental-by-pcunwa]
+name = "Roformer Model: BS Roformer | Leap Instrumental by pcunwa"
+category = "instrumental"
+license = "not-reviewed"
+provenance = "pcunwa/BS-Roformer-Leap Hugging Face repository"
+source_revision = "2026-06-30"
+updated_at = "2026-07-23"
+
+[[models.roformer-model-bs-roformer-leap-instrumental-by-pcunwa.artifacts]]
+kind = "checkpoint"
+name = "bs_roformer_leap_inst.ckpt"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Leap/resolve/main/bs_roformer_leap_inst.ckpt"
+sha256 = "1459b5eb70d7e1a805d8d080cb0d1abfcd06dc3931daedecad59944a8f7a0a57"
+size = 238212233
+
+[[models.roformer-model-bs-roformer-leap-instrumental-by-pcunwa.artifacts]]
+kind = "config"
+name = "bs_leap_inst_conf.yaml"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Leap/resolve/main/bs_leap_inst_conf.yaml"
+sha256 = "2004e01f7019e9dd7bad44dd213b337dd055806811266f0f0ac925b3da33cb29"
+size = 1960
+
+[models.roformer-model-bs-roformer-leap-vocals-by-pcunwa]
+name = "Roformer Model: BS Roformer | Leap Vocals by pcunwa"
+category = "vocals"
+license = "not-reviewed"
+provenance = "pcunwa/BS-Roformer-Leap Hugging Face repository"
+source_revision = "2026-06-30"
+updated_at = "2026-07-23"
+
+[[models.roformer-model-bs-roformer-leap-vocals-by-pcunwa.artifacts]]
+kind = "checkpoint"
+name = "bs_roformer_leap_voc.ckpt"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Leap/resolve/main/bs_roformer_leap_voc.ckpt"
+sha256 = "8c0e4bfff6be150a12582a7c236379aa42102b7f43831900df5b2addf924da7c"
+size = 238220459
+
+[[models.roformer-model-bs-roformer-leap-vocals-by-pcunwa.artifacts]]
+kind = "config"
+name = "bs_leap_voc_conf.yaml"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Leap/resolve/main/bs_leap_voc_conf.yaml"
+sha256 = "fb4238cd1e0cd6e6620b3f4e70bbea0dc5b1f1bdcf51f96b5091d2ee6794b8c8"
+size = 1961
+
+[models.roformer-model-bs-roformer-karaoke-by-anvuew]
+name = "Roformer Model: BS Roformer | Karaoke by anvuew"
+category = "karaoke"
+license = "GPL-3.0"
+provenance = "anvuew/karaoke_bs_roformer Hugging Face repository"
+source_revision = "2025-10-17"
+updated_at = "2026-07-23"
+
+[[models.roformer-model-bs-roformer-karaoke-by-anvuew.artifacts]]
+kind = "checkpoint"
+name = "karaoke_bs_roformer_anvuew.ckpt"
+url = "https://huggingface.co/anvuew/karaoke_bs_roformer/resolve/main/karaoke_bs_roformer_anvuew.ckpt"
+sha256 = "206d04757cb5f75ca3b55f8a0a48f5c26aa2351d4ff3c7adbfc9affa30ea3ae4"
+size = 204486925
+
+[[models.roformer-model-bs-roformer-karaoke-by-anvuew.artifacts]]
+kind = "config"
+name = "karaoke_bs_roformer_anvuew.yaml"
+url = "https://huggingface.co/anvuew/karaoke_bs_roformer/resolve/main/karaoke_bs_roformer_anvuew.yaml"
+sha256 = "5cb3f127ecbc6a8e37f31ea7e05f60f360a44da43e857bde805b7b68558f6338"
+size = 1973
+
+[models.roformer-model-bs-roformer-karaoke-by-becruily]
+name = "Roformer Model: BS Roformer | Karaoke by becruily"
+category = "karaoke"
+license = "not-reviewed"
+provenance = "becruily/bs-roformer-karaoke Hugging Face repository"
+source_revision = "2025-09-08"
+updated_at = "2026-07-23"
+
+[[models.roformer-model-bs-roformer-karaoke-by-becruily.artifacts]]
+kind = "checkpoint"
+name = "bs_roformer_karaoke_frazer_becruily.ckpt"
+url = "https://huggingface.co/becruily/bs-roformer-karaoke/resolve/main/bs_roformer_karaoke_frazer_becruily.ckpt"
+sha256 = "eb90ee24c1154d83fbcfd27e96182f19e061557cc6e4746953125e08c29389f9"
+size = 204436907
+
+[[models.roformer-model-bs-roformer-karaoke-by-becruily.artifacts]]
+kind = "config"
+name = "config_karaoke_frazer_becruily.yaml"
+url = "https://huggingface.co/becruily/bs-roformer-karaoke/resolve/main/config_karaoke_frazer_becruily.yaml"
+sha256 = "1d3b58b473025183d0d3c91e7a444cb5f1418d9f34e8f46b8d2fb10d2cc8ab34"
+size = 1903
+
+[models.roformer-model-bs-roformer-dereverb-by-anvuew-sdr-22-5050]
+name = "Roformer Model: BS Roformer | De-Reverb by anvuew SDR 22.5050"
+category = "dereverb"
+license = "GPL-3.0"
+provenance = "anvuew/dereverb_bs_roformer Hugging Face repository"
+source_revision = "2026-02-13"
+updated_at = "2026-07-23"
+
+[[models.roformer-model-bs-roformer-dereverb-by-anvuew-sdr-22-5050.artifacts]]
+kind = "checkpoint"
+name = "dereverb_bs_roformer_anvuew_sdr_22.5050.ckpt"
+url = "https://huggingface.co/anvuew/dereverb_bs_roformer/resolve/main/dereverb_bs_roformer_anvuew_sdr_22.5050.ckpt"
+sha256 = "b4dfa4c4aa251c0afc303e5d512d904a1c2255e51d8d0dbfbddb18d740563d42"
+size = 204496717
+
+[[models.roformer-model-bs-roformer-dereverb-by-anvuew-sdr-22-5050.artifacts]]
+kind = "config"
+name = "dereverb_bs_roformer_anvuew.yaml"
+url = "https://huggingface.co/anvuew/dereverb_bs_roformer/resolve/main/config.yaml"
+sha256 = "5022524393c946974ec160df81b82299cd0055fb1f1b51058cb251098d9a01b7"
+size = 1969
+
+[models.roformer-model-bs-roformer-mag-vocals-by-anvuew]
+name = "Roformer Model: BS Roformer | MAG Vocals by anvuew"
+category = "vocals"
+license = "GPL-3.0"
+provenance = "anvuew/BS_RoFormer_mag Hugging Face repository"
+source_revision = "2026-03-12"
+updated_at = "2026-07-23"
+
+[[models.roformer-model-bs-roformer-mag-vocals-by-anvuew.artifacts]]
+kind = "checkpoint"
+name = "bs_roformer_mag_anvuew.ckpt"
+url = "https://huggingface.co/anvuew/BS_RoFormer_mag/resolve/main/bs_roformer_mag_anvuew.ckpt"
+sha256 = "16792de7af1a5d5293debec24d4566b13b645e6707776234409cce7697ea933d"
+size = 204502577
+
+[[models.roformer-model-bs-roformer-mag-vocals-by-anvuew.artifacts]]
+kind = "config"
+name = "bs_roformer_mag_anvuew.yaml"
+url = "https://huggingface.co/anvuew/BS_RoFormer_mag/resolve/main/config.yaml"
+sha256 = "6fd3f771b21f3145cf4151791261ef0810fb548bad64801148a2cfeacac36042"
+size = 1968
+
 [models.roformer-model-bs-roformer-vocals-by-gabox]
 name = "Roformer Model: BS Roformer | Vocals by Gabox"
 category = "vocals"

@@ -86,8 +86,9 @@ Also available as a preprint: [arXiv:2309.02612](https://arxiv.org/abs/2309.0261
 
 ## Scope
 
-**In scope**: inference (forward pass) with the BS-RoFormer architecture; a
-10-model registry spanning multi-stem, vocals, instrumental, and de-reverb
+**In scope**: inference (forward pass) with the BS-RoFormer architecture; an
+20-model registry spanning multi-stem, 53-stem mega, four-stem, vocals, karaoke,
+instrumental, and de-reverb
 checkpoints; automatic, manual, and configurable-directory checkpoint
 management with sha256 verification; a standalone download CLI.
 
@@ -153,6 +154,16 @@ print(DEFAULT_MODEL)  # "roformer-model-bs-roformer-sw-by-jarredou"
 | Model | Category | Description |
 |-------|----------|-------------|
 | **`roformer-model-bs-roformer-sw-by-jarredou`** | multi-stem | **Recommended** - 6-stem separation (vocals, drums, bass, guitar, piano, other) |
+| `roformer-model-bs-roformer-mvsep-mega-53-stems` | mega-stem | MVSep Mega 53-stem model by ZFTurbo; memory-heavy, upstream recommends at least 16GB VRAM |
+| `roformer-model-bs-roformer-musdb18hq-by-zfturbo` | four-stem | MUSDB18HQ 4-stem model from ZFTurbo's v1.0.12 release |
+| `roformer-model-bs-roformer-leap-vocals-by-pcunwa` | vocals | Leap vocals checkpoint by pcunwa |
+| `roformer-model-bs-roformer-leap-instrumental-by-pcunwa` | instrumental | Leap instrumental checkpoint by pcunwa |
+| `roformer-model-bs-roformer-karaoke-by-anvuew` | karaoke | Karaoke vocals checkpoint by anvuew |
+| `roformer-model-bs-roformer-karaoke-by-becruily` | karaoke | Karaoke vocals checkpoint by becruily |
+| `roformer-model-bs-roformer-dereverb-by-anvuew-sdr-22-5050` | dereverb | anvuew de-reverberation checkpoint |
+| `roformer-model-bs-roformer-mag-vocals-by-anvuew` | vocals | anvuew MAG vocals checkpoint |
+| `roformer-model-bs-roformer-vocals-ft1-by-anvuew` | vocals | anvuew FT1 vocals checkpoint |
+| `roformer-model-bs-roformer-vocals-by-anvuew` | vocals | anvuew vocals checkpoint |
 | `roformer-model-bs-roformer-vocals-resurrection-by-unwa` | vocals | Vocals Resurrection by unwa |
 | `roformer-model-bs-roformer-vocals-revive-v3e-by-unwa` | vocals | Vocals Revive V3e by unwa |
 | `roformer-model-bs-roformer-vocals-revive-v2-by-unwa` | vocals | Vocals Revive V2 by unwa |
@@ -162,7 +173,16 @@ print(DEFAULT_MODEL)  # "roformer-model-bs-roformer-sw-by-jarredou"
 | `roformer-model-bs-roformer-de-reverb` | dereverb | De-reverberation model |
 | ... | ... | See `--list-models` for full list |
 
-**Categories**: multi-stem, vocals, instrumental, dereverb
+**Categories**: multi-stem, mega-stem, four-stem, vocals, karaoke, instrumental, dereverb
+
+The MVSep Mega entry exposes 53 raw stems from one BS-RoFormer checkpoint. It is
+useful for broad stem discovery, but it is much larger than the default model and
+the upstream release notes warn that individual stems may be weaker than
+specialized models.
+
+HyperACE and FNO-flavored BS-RoFormer checkpoints are not listed here yet because
+their checkpoint keys show different mask-estimator heads; those require a model
+variation rather than a registry-only addition.
 
 > As of the 2026-07-12 re-audit, all registry entries have a live download
 > URL (see the availability note in [What This Project Will NEVER Bundle](#what-this-project-will-never-bundle)).
