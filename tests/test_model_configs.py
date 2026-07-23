@@ -19,7 +19,7 @@ from ml_collections import ConfigDict
 # Add src to path for direct execution
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from bs_roformer.utils import get_model_from_config
+from bs_roformer.utils import get_model_from_config, load_checkpoint_state
 
 
 def find_all_configs() -> list[tuple[str, Path]]:
@@ -152,6 +152,54 @@ class TestModelInstantiation:
 
         assert model.mask_estimator_variant == "hyperace"
         assert hasattr(model.mask_estimators[0], "segm")
+
+    def test_fno_variation_selects_fourier_head(self):
+        """Registry metadata can select the FNO MaskEstimator variation."""
+        config = ConfigDict(
+            {
+                "model": {
+                    "dim": 8,
+                    "depth": 1,
+                    "stereo": True,
+                    "num_stems": 1,
+                    "time_transformer_depth": 1,
+                    "freq_transformer_depth": 1,
+                    "freqs_per_bands": [512, 513],
+                    "dim_head": 4,
+                    "heads": 1,
+                    "dim_freqs_in": 1025,
+                    "stft_n_fft": 2048,
+                    "stft_hop_length": 512,
+                    "stft_win_length": 2048,
+                    "mask_estimator_depth": 2,
+                    "mlp_expansion_factor": 4,
+                },
+                "training": {"target_instrument": "other", "instruments": ["vocals", "other"]},
+            }
+        )
+
+        model = get_model_from_config(
+            "bs_roformer",
+            config,
+            model_variation="fno",
+        )
+
+        assert model.mask_estimator_variant == "fno"
+        assert hasattr(model.mask_estimators[0].to_freqs[0][0], "fno_blocks")
+
+    def test_checkpoint_loader_strips_extra_metadata(self, tmp_path, monkeypatch):
+        """FNO checkpoint metadata is loader compatibility data, not a model key."""
+        checkpoint = tmp_path / "model.ckpt"
+        checkpoint.write_bytes(b"placeholder")
+
+        monkeypatch.setattr(
+            "bs_roformer.utils.torch.load",
+            lambda *_args, **_kwargs: {"weight": object(), "_metadata": object()},
+        )
+
+        state = load_checkpoint_state(checkpoint)
+
+        assert set(state) == {"weight"}
 
 
 def main():

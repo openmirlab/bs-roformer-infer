@@ -133,6 +133,13 @@
       "config": "hyperace_v2_voc_config.yaml",
       "category": "vocals",
       "variation": "hyperace"
+    },
+    "roformer-model-bs-roformer-fno-instrumental-by-pcunwa": {
+      "name": "Roformer Model: BS Roformer | FNO Instrumental by pcunwa",
+      "checkpoint": "bs_roformer_fno.ckpt",
+      "config": "bsrofo_fno.yaml",
+      "category": "instrumental",
+      "variation": "fno"
     }
   }
 }

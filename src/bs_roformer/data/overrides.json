@@ -21,7 +21,8 @@
     "bs_roformer_vocals_revive_v2_unwa.ckpt": "https://huggingface.co/Politrees/UVR_resources/resolve/main/models/Roformer/BandSplit/bs_roformer_revive_v2_by_unwa.ckpt",
     "bs_roformer_vocals_revive_v3e_unwa.ckpt": "https://huggingface.co/Politrees/UVR_resources/resolve/main/models/Roformer/BandSplit/bs_roformer_revive_v3_by_unwa.ckpt",
     "bs_roformer_inst_hyperacev2.ckpt": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_inst/bs_roformer_inst_hyperacev2.ckpt",
-    "bs_roformer_voc_hyperacev2.ckpt": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_voc/bs_roformer_voc_hyperacev2.ckpt"
+    "bs_roformer_voc_hyperacev2.ckpt": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_voc/bs_roformer_voc_hyperacev2.ckpt",
+    "bs_roformer_fno.ckpt": "https://huggingface.co/pcunwa/BS-Roformer-Inst-FNO/resolve/main/bs_roformer_fno.ckpt"
   },
   "configs": {
     "BS-Rofo-SW-Fixed.yaml": "https://huggingface.co/enerjazzer/BS-ROFO-SW-Fixed/resolve/main/BS-Rofo-SW-Fixed.yaml",
@@ -41,6 +42,7 @@
     "config_bs_roformer_vocals_resurrection_unwa.yaml": "https://huggingface.co/Politrees/UVR_resources/resolve/main/models/Roformer/BandSplit/config_BandSplit-Roformer_Resurrection_Vocals_by-Unwa.yaml",
     "config_bs_roformer_vocals_revive_unwa.yaml": "https://huggingface.co/Politrees/UVR_resources/resolve/main/models/Roformer/BandSplit/config_bs_roformer_revive_by_unwa.yaml",
     "hyperace_v2_inst_config.yaml": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_inst/config.yaml",
-    "hyperace_v2_voc_config.yaml": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_voc/config.yaml"
+    "hyperace_v2_voc_config.yaml": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_voc/config.yaml",
+    "bsrofo_fno.yaml": "https://huggingface.co/pcunwa/BS-Roformer-Inst-FNO/resolve/main/bsrofo_fno.yaml"
   }
 }

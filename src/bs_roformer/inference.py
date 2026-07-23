@@ -39,7 +39,7 @@ from tqdm import tqdm
 from .checkpoints import checkpoint_metadata
 from .download import ensure_model_assets
 from .model_registry import DEFAULT_MODEL
-from .utils import demix_track, get_model_from_config
+from .utils import demix_track, get_model_from_config, load_checkpoint_state
 
 
 class SafeLoaderWithTuple(yaml.SafeLoader):
@@ -232,7 +232,7 @@ def proc_folder(args) -> OutputManifest:
         model_variation=getattr(args, "model_variation", None),
     )
     print(f"Using model weights: {args.model_path}")
-    model.load_state_dict(torch.load(args.model_path, map_location=torch.device("cpu")))
+    model.load_state_dict(load_checkpoint_state(args.model_path, map_location=torch.device("cpu")))
 
     device = _select_device(args)
 

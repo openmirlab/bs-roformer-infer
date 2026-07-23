@@ -12,6 +12,10 @@
 - Added the HyperACE MaskEstimator variation and two pcunwa HyperACE v2
   checkpoints (`instrumental`, `vocals`). Both strict-load with no missing or
   unexpected keys and pass a short forward probe; the registry now has 22 models.
+- Added the FNO MaskEstimator variation and pcunwa's FNO instrumental checkpoint
+  without adding `neuraloperator` as a dependency. The bundled minimal FNO1d
+  inference surface strict-loads the checkpoint and passes a short forward probe;
+  the registry now has 23 models.
 - `BSRoformer` now passes through upstream `mlp_expansion_factor` configs to the
   MaskEstimator MLP; this is required for strict-loading the MVSep Mega 53-stem
   checkpoint (`mlp_expansion_factor: 2`).

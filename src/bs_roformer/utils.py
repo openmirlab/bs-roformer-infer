@@ -21,6 +21,15 @@ import sys
 import torch.nn as nn
 
 
+def load_checkpoint_state(path, *, map_location="cpu"):
+    """Load published BS-RoFormer checkpoints with small compatibility cleanup."""
+    with torch.serialization.safe_globals([torch._C._nn.gelu]):
+        state = torch.load(path, map_location=map_location)
+    if isinstance(state, dict):
+        state.pop("_metadata", None)
+    return state
+
+
 def get_model_from_config(model_type, config, *, model_variation=None):
     if model_type == 'bs_roformer':
         from . import BSRoformer

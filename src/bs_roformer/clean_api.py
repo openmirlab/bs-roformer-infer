@@ -66,7 +66,7 @@ class BSRoformerSession:
         try:
             from .download import ensure_model_assets, get_file_hash
             from .inference import SafeLoaderWithTuple
-            from .utils import get_model_from_config
+            from .utils import get_model_from_config, load_checkpoint_state
 
             if self.model_path is None or self.config_path is None:
                 self.model_path, self.config_path = ensure_model_assets(
@@ -81,8 +81,6 @@ class BSRoformerSession:
                 model_variation=self._metadata().get("variation"),
             )
 
-            import torch
-
             artifacts = self._metadata().get("artifacts", [])
             expected = self.checkpoint_sha256 or next(
                 (
@@ -94,7 +92,7 @@ class BSRoformerSession:
             )
             if expected and get_file_hash(self.model_path).lower() != expected.lower():
                 raise ValueError(f"checkpoint SHA-256 mismatch for {self.model_path}")
-            state = torch.load(self.model_path, map_location="cpu")
+            state = load_checkpoint_state(self.model_path, map_location="cpu")
             self._model.load_state_dict(state)
             from .inference import _select_device
             from argparse import Namespace
