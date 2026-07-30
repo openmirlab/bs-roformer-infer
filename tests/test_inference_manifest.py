@@ -85,7 +85,11 @@ def test_run_folder_returns_manifest_for_every_written_output(monkeypatch, tmp_p
 
     monkeypatch.setattr(inference_module.sf, "read", fake_read)
     monkeypatch.setattr(inference_module.sf, "write", fake_write)
-    monkeypatch.setattr(inference_module, "demix_track", fake_demix_track)
+    # demix_track is called from the Torch backend, which is the one place the
+    # chunked inference now lives -- patch it there, not at a re-export.
+    from bs_roformer.backends import torch_backend as torch_backend_module
+
+    monkeypatch.setattr(torch_backend_module, "demix_track", fake_demix_track)
     monkeypatch.setattr(inference_module.time, "sleep", lambda seconds: None)
 
     manifest = inference_module.run_folder(
@@ -142,7 +146,7 @@ def test_run_folder_returns_manifest_for_every_written_output(monkeypatch, tmp_p
     )
 
 
-def test_session_infer_returns_run_folder_manifest(monkeypatch, tmp_path):
+def test_session_infer_returns_folder_run_manifest(monkeypatch, tmp_path):
     expected = OutputManifest(
         outputs=(
             OutputFile(
@@ -153,13 +157,16 @@ def test_session_infer_returns_run_folder_manifest(monkeypatch, tmp_path):
         )
     )
 
-    def fake_run_folder(model, args, config, device, verbose=False):
+    # The session drives the backend-agnostic folder run, handing it the resolved
+    # backend's separate() -- so that is the seam this asserts against.
+    def fake_separate_folder_with(separate, args, config, verbose=False):
+        assert callable(separate)
         assert args.input_folder == tmp_path / "inputs"
         assert args.store_dir == tmp_path / "outputs"
         assert verbose is True
         return expected
 
-    monkeypatch.setattr(inference_module, "run_folder", fake_run_folder)
+    monkeypatch.setattr(inference_module, "separate_folder_with", fake_separate_folder_with)
 
     session = BSRoformerSession(model=_DummyModel(), config=_multi_stem_config(), device="cpu")
     result = session.infer(tmp_path / "inputs", store_dir=tmp_path / "outputs", verbose=True)
