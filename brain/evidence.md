@@ -358,6 +358,30 @@ one ships a decorative test.
 checkpoint, all seven outputs agree with Torch to `3.427e-07`, in 9.3 s against
 Torch-MPS's 25 s.
 
+## 15. Three defects in *this* package, found by porting the pattern elsewhere
+
+Porting the same change into `melband-roformer-infer` surfaced three faults here
+that this package's own tests did not catch. Recorded because the lesson
+generalizes: **the second implementation audits the first.**
+
+1. **`--backend mlx` was broken through the CLI.** `proc_folder()` built a Torch
+   model unconditionally and then handed it to whichever backend resolved, so a
+   non-Torch backend ended up holding the wrong framework's model. Nothing
+   exercised it — the session path was tested, the CLI path was not. Fixed: the
+   CLI now branches and lets a non-Torch backend build from the checkpoint, with
+   `test_cli_builds_a_non_torch_backend_from_the_checkpoint` as the guard.
+2. **A documented contract was never enforced.** `architecture.md` lists
+   "`device="cuda"` with `backend="mlx"` → raise; do not reinterpret" as a failure
+   mode the design must not have. Nothing validated it. Fixed with
+   `MLXBackend._select_device`. A contract stated only in prose is a wish.
+3. **`release()` called `.cpu()` twice** on the same model — the session did it
+   and the backend did it. Invisible here; melband's existing `cpu_calls == 1`
+   test caught it immediately.
+
+Also confirmed at melband: `exact_zero_safe_rfft` is load-bearing there too.
+Removing it moved the zero-padded case from `1.807e-07` to `4.487e-02` — roughly
+250,000x worse — which matches this package's own before/after almost exactly.
+
 ## Not yet measured
 
 These are open and must not be stated as facts until probed:

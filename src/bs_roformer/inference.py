@@ -230,7 +230,7 @@ def proc_folder(args) -> OutputManifest:
     else:
         args = parser.parse_args(args)
 
-    from .backends import resolve_backend_name
+    from .backends import DEFAULT_BACKEND, resolve_backend_name
 
     # Availability first, so an unavailable backend fails before a checkpoint is
     # downloaded and verified rather than after.
@@ -250,26 +250,41 @@ def proc_folder(args) -> OutputManifest:
     with open(args.config_path) as f:
         config = ConfigDict(yaml.load(f, Loader=SafeLoaderWithTuple))
 
-    model = get_model_from_config(
-        args.model_type,
-        config,
-        model_variation=getattr(args, "model_variation", None),
-    )
-    print(f"Using model weights: {args.model_path}")
-    model.load_state_dict(load_checkpoint_state(args.model_path, map_location=torch.device("cpu")))
-
-    device = _select_device(args)
-
-    if args.device_ids:
-        if not torch.cuda.is_available():
-            raise RuntimeError("CUDA is required for --device_ids usage")
-        model = nn.DataParallel(model, device_ids=args.device_ids).to(device)
-    else:
-        model = model.to(device)
-
     from .backends import get_backend
 
-    backend = get_backend(backend_name)(model, config, device)
+    print(f"Using model weights: {args.model_path}")
+
+    if backend_name == DEFAULT_BACKEND:
+        model = get_model_from_config(
+            args.model_type,
+            config,
+            model_variation=getattr(args, "model_variation", None),
+        )
+        model.load_state_dict(
+            load_checkpoint_state(args.model_path, map_location=torch.device("cpu"))
+        )
+        device = _select_device(args)
+        if args.device_ids:
+            if not torch.cuda.is_available():
+                raise RuntimeError("CUDA is required for --device_ids usage")
+            model = nn.DataParallel(model, device_ids=args.device_ids).to(device)
+        else:
+            model = model.to(device)
+        backend = get_backend(backend_name)(model, config, device)
+    else:
+        # A non-Torch backend builds its own model from the checkpoint. Handing it
+        # a constructed torch module -- which this path used to do unconditionally
+        # -- produced a backend holding the wrong framework's model entirely.
+        if args.device_ids:
+            raise ValueError(f"--device_ids is CUDA-only and cannot be used with "
+                             f"backend {backend_name!r}")
+        backend = get_backend(backend_name).from_checkpoint(
+            config=config,
+            checkpoint_path=args.model_path,
+            variation=getattr(args, "model_variation", None),
+            device=getattr(args, "device", None),
+        )
+
     return separate_folder_with(backend.separate, args, config, verbose=False)
 
 

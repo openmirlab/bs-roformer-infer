@@ -98,6 +98,37 @@ head for and then fails at construction, where Torch would simply have worked.
 Resolution now takes `variation`. An **explicit** backend is still never
 downgraded — that request is honoured or refused.
 
+### D13 · Share the *pattern*, not a code library — decided at N=2
+
+Porting `melband-roformer-infer` was the second consumer, and the constitution's
+N+1 rule says that is when you learn what actually repeats. It repeated less than
+expected, and the parts that did not repeat are the dangerous ones.
+
+**Transferred perfectly** (the checklist): the `backend` × `device` contract, the
+seam at a whole mixture, `exact_zero_safe_rfft`, the auditing weight loader,
+"your parity fixture must contain silence", and "validate the test by removing
+the fix".
+
+**Did not transfer, and would have shipped a wrong model if it had:**
+
+- `melband`'s Torch `MLP()` builds `depth` hidden layers; this package's builds
+  `depth - 1`. Reusing this package's MLX primitive verbatim would have produced a
+  shallower MLP than any melband checkpoint was trained with.
+- Upstream's vendored MLX melband applies a trunk-level `final_norm` that
+  melband's own Torch model never trains.
+
+Both are genuine architectural divergence between two sibling packages, not
+copy-paste error. A shared code library for the model math would have to
+parameterize exactly the things that differ, and would have silently
+re-introduced the first bug unless it forced re-verification against each
+package's own Torch model anyway.
+
+**So: what kept the port correct was the auditing loader, not shared code.** A
+shared primitives repo stays worth having eventually — the Metal rfft workaround
+and the layout remaps are genuinely identical everywhere — but it is a small
+box of stateless helpers, and it must never grow into the shared runtime
+article 4a forbids. Revisit at N=3 or N=4, with this evidence in hand.
+
 ## Open
 
 | # | Question | Owner | Blocks |

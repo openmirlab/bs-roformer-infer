@@ -5,6 +5,7 @@ seam exists to protect -- that a requested backend is honoured or refused, never
 silently swapped, and that the default import path stays free of optional
 frameworks.
 """
+import argparse
 import sys
 
 import pytest
@@ -136,6 +137,101 @@ def test_explicit_backend_is_never_downgraded_for_an_unsupported_checkpoint(monk
     monkeypatch.setattr(mlx_backend.MLXBackend, "is_available", classmethod(lambda cls: True))
     with pytest.raises(BackendUnavailable):
         resolve_backend_name("mlx", variation="no_such_head")
+
+
+@pytest.mark.parametrize("device", [None, "auto", "mps"])
+def test_mlx_accepts_only_its_own_execution_target(device):
+    from bs_roformer.backends.mlx_backend import MLXBackend
+
+    assert MLXBackend._select_device(device) == "mps"
+
+
+@pytest.mark.parametrize("device", ["cuda", "cuda:0", "cpu"])
+def test_mlx_refuses_a_torch_device_rather_than_reinterpreting_it(device):
+    """architecture.md failure mode 2, now actually enforced.
+
+    Treating device="cuda" as "the Apple GPU anyway" would discard what the
+    caller explicitly asked for.
+    """
+    from bs_roformer.backends.mlx_backend import MLXBackend
+
+    with pytest.raises(BackendUnavailable):
+        MLXBackend._select_device(device)
+
+
+def test_cli_builds_a_non_torch_backend_from_the_checkpoint(monkeypatch, tmp_path):
+    """The CLI path must not hand a constructed torch module to another framework.
+
+    It used to do exactly that: build the Torch model unconditionally, then pass
+    it to whichever backend was resolved, so `--backend mlx` produced a backend
+    holding the wrong framework's model. No test covered it.
+    """
+    from bs_roformer import inference as inference_module
+
+    seen = {}
+
+    class FakeBackend:
+        name = "fake"
+
+        @classmethod
+        def is_available(cls):
+            return True
+
+        @classmethod
+        def supports_variation(cls, variation):
+            return True
+
+        @classmethod
+        def from_checkpoint(cls, **kwargs):
+            seen.update(kwargs)
+            return cls()
+
+        def separate(self, mix):  # pragma: no cover - never reached
+            raise AssertionError("not exercised")
+
+    monkeypatch.setattr("bs_roformer.backends._load", lambda name: FakeBackend)
+    monkeypatch.setattr(
+        inference_module, "get_model_from_config", _fail_if_called("torch model built")
+    )
+    monkeypatch.setattr(
+        inference_module, "separate_folder_with", lambda *a, **k: "manifest"
+    )
+    monkeypatch.setattr(
+        inference_module, "_resolve_model_assets", lambda args, parser: None
+    )
+    monkeypatch.setattr(inference_module.yaml, "load", lambda *a, **k: {})
+
+    config_path = tmp_path / "c.yaml"
+    config_path.write_text("model: {}\n")
+    args = _CliArgs(config_path=config_path, model_path=tmp_path / "m.ckpt")
+
+    assert inference_module.proc_folder(args) == "manifest"
+    assert seen["checkpoint_path"] == tmp_path / "m.ckpt"
+
+
+def _fail_if_called(what):
+    def _raise(*_args, **_kwargs):
+        raise AssertionError(f"{what}: the non-torch path must not do this")
+
+    return _raise
+
+
+class _CliArgs(argparse.Namespace):
+    """Minimal stand-in for the parsed CLI namespace proc_folder consumes.
+
+    Must actually be a Namespace: proc_folder isinstance-checks it to decide
+    whether to parse or use as-is.
+    """
+
+    def __init__(self, **kwargs):
+        self.backend = "mlx"
+        self.device = None
+        self.device_ids = None
+        self.model_type = "bs_roformer"
+        self.model_variation = None
+        self.input_folder = "in"
+        self.store_dir = "out"
+        self.__dict__.update(kwargs)
 
 
 def test_importing_the_package_does_not_pull_in_an_optional_framework():

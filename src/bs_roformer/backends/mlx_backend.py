@@ -83,6 +83,7 @@ class MLXBackend:
         cls._require()
         cls.assert_supports_variation(variation)
         cls._reject_unaligned_chunking(config)
+        device = cls._select_device(device)
 
         from ..mlx import (
             BSRoformerMLX,
@@ -98,6 +99,23 @@ class MLXBackend:
         )
         model.eval()
         return cls(model, config, device=device)
+
+    @staticmethod
+    def _select_device(device):
+        """MLX owns its own execution target; a Torch device string is refused.
+
+        Reinterpreting `device="cuda"` as "run on the Apple GPU anyway" would
+        discard what the caller explicitly asked for, which is the same failure
+        article 4b forbids for devices generally. Accepts only the sentinels that
+        genuinely mean "wherever MLX runs".
+        """
+        if device in (None, "auto", "mps"):
+            return "mps"
+        raise BackendUnavailable(
+            f"backend 'mlx' cannot honour device {device!r}; it executes on Apple "
+            f"Silicon and accepts None, 'auto', or 'mps'. Use backend='torch' to "
+            f"select a Torch device."
+        )
 
     @staticmethod
     def supports_variation(variation) -> bool:

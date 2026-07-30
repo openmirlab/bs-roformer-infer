@@ -164,10 +164,13 @@ class BSRoformerSession:
         return self._backend
 
     def release(self):
+        # Defer entirely to the backend when there is one: it already moves the
+        # model off-device and clears the right cache. Doing it here as well
+        # called .cpu() twice on the same model.
         if self._backend is not None:
             self._backend.release()
             self._backend = None
-        if self._model is not None and hasattr(self._model, "cpu"):
+        elif self._model is not None and hasattr(self._model, "cpu"):
             self._model.cpu()
         self._model = None
         try:
