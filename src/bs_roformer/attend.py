@@ -4,7 +4,10 @@ Adapted from lucidrains-style attention wrappers: picks PyTorch's SDPA backend b
 on GPU compute capability at construction time (A100 gets flash-only; other CUDA
 devices get math/mem-efficient) rather than letting PyTorch guess per call, and falls
 back to a plain einsum attention path when `flash=False` so behavior matches the
-non-flash checkpoints this package loads. Requires PyTorch >= 2.0 when flash is enabled.
+non-flash checkpoints this package loads. The backend-pinning context manager is
+entered only for CUDA tensors, since its flags govern CUDA kernel choice alone and
+entering it on CPU/MPS bought nothing but a per-call deprecation warning.
+Requires PyTorch >= 2.0 when flash is enabled.
 
 Reads: torch (nn, scaled_dot_product_attention), packaging.version, einops
 """
@@ -84,17 +87,20 @@ class Attend(nn.Module):
             default_scale = q.shape[-1] ** -0.5
             q = q * (self.scale / default_scale)
 
-        # Check if there is a compatible device for flash attention
-
-        config = self.cuda_config if is_cuda else self.cpu_config
-
         # pytorch 2.0 flash attn: q, k, v, mask, dropout, softmax_scale
 
-        with torch.backends.cuda.sdp_kernel(**config._asdict()):
-            out = F.scaled_dot_product_attention(
-                q, k, v,
-                dropout_p = self.dropout if self.training else 0.
-            )
+        dropout_p = self.dropout if self.training else 0.
+
+        # sdp_kernel's flags only steer CUDA kernel selection, so entering this
+        # (deprecated) context manager off CUDA selected nothing while emitting a
+        # FutureWarning on every attention call -- dozens per forward on MPS/CPU.
+        # Enter it only where it has meaning; elsewhere PyTorch's own dispatch is
+        # exactly what the all-enabled cpu_config asked for anyway.
+        if not is_cuda or self.cuda_config is None:
+            return F.scaled_dot_product_attention(q, k, v, dropout_p = dropout_p)
+
+        with torch.backends.cuda.sdp_kernel(**self.cuda_config._asdict()):
+            out = F.scaled_dot_product_attention(q, k, v, dropout_p = dropout_p)
 
         return out
 

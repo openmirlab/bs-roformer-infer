@@ -8,21 +8,21 @@ explicit paths always win and skip all of that.
 Training configs sometimes embed `!!python/tuple` YAML tags; SafeLoaderWithTuple
 downgrades those to plain lists so `yaml.load` never has to execute an arbitrary
 Python-object constructor, and utils.get_model_from_config converts the needed
-params back to tuples afterward. Falls back to CPU with a warning when CUDA is
-unavailable rather than raising, since inference (unlike training) is still usable,
-just slow. `run_folder()` returns an immutable manifest of the files it actually
+params back to tuples afterward. `_select_device` resolves `None`/`auto` to
+cuda-else-cpu (legacy behaviour: MPS is opt-in, never auto-promoted) and raises on
+an explicitly requested accelerator that is unavailable rather than silently
+downgrading it. `run_folder()` returns an immutable manifest of the files it actually
 writes, derived from the loaded config and successful writes rather than guessed
 registry metadata.
 
-Reads: .utils (demix_track, get_model_from_config), .download (ensure_model_assets),
-.checkpoints (checkpoint_metadata), .model_registry (DEFAULT_MODEL), yaml,
-ml_collections, torch
+Reads: .backends.torch_backend (TorchBackend), .utils (get_model_from_config,
+load_checkpoint_state), .download (ensure_model_assets), .checkpoints
+(checkpoint_metadata), .model_registry (DEFAULT_MODEL), yaml, ml_collections, torch
 """
 
 from __future__ import annotations
 
 import argparse
-import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -39,7 +39,7 @@ from tqdm import tqdm
 from .checkpoints import checkpoint_metadata
 from .download import ensure_model_assets
 from .model_registry import DEFAULT_MODEL
-from .utils import demix_track, get_model_from_config, load_checkpoint_state
+from .utils import get_model_from_config, load_checkpoint_state
 
 
 class SafeLoaderWithTuple(yaml.SafeLoader):
@@ -120,8 +120,27 @@ def _append_output(
 
 
 def run_folder(model, args, config, device, verbose: bool = False) -> OutputManifest:
+    """Torch entry point: separate every WAV in a folder. Signature unchanged.
+
+    Delegates the Torch-specific work to TorchBackend and the backend-agnostic
+    work -- folder iteration, stem naming, instrumental derivation, the manifest --
+    to separate_folder_with(), so any backend drives the identical output logic.
+    """
+    from .backends.torch_backend import TorchBackend
+
+    backend = TorchBackend(model, config, device)
+    return separate_folder_with(backend.separate, args, config, verbose=verbose)
+
+
+def separate_folder_with(separate, args, config, verbose: bool = False) -> OutputManifest:
+    """Backend-agnostic folder run: read, delegate one mixture, write, manifest.
+
+    `separate` receives a `(channels, samples)` float32 array and returns a mapping
+    of stem id to an array of the same shape. Everything a stem's filename, the
+    derived instrumental, and the returned manifest depend on is decided here, once,
+    so no backend can drift on any of it.
+    """
     start_time = time.time()
-    model.eval()
 
     input_folder = Path(args.input_folder).expanduser()
     store_dir = _resolve_output_dir(Path(args.store_dir).expanduser())
@@ -133,7 +152,6 @@ def run_folder(model, args, config, device, verbose: bool = False) -> OutputMani
 
     iterable = _format_iterable(all_mixtures_path, verbose)
 
-    first_chunk_time = None
     outputs: list[OutputFile] = []
 
     for track_number, path in enumerate(iterable, 1):
@@ -146,17 +164,7 @@ def run_folder(model, args, config, device, verbose: bool = False) -> OutputMani
             original_mono = True
             mix = np.stack([mix, mix], axis=-1)
 
-        mixture = torch.tensor(mix.T, dtype=torch.float32)
-
-        if first_chunk_time is not None:
-            total_length = mixture.shape[1]
-            num_chunks = (total_length + config.inference.chunk_size // config.inference.num_overlap - 1) // (config.inference.chunk_size // config.inference.num_overlap)
-            estimated_total_time = first_chunk_time * num_chunks
-            print(f"Estimated total processing time for this track: {estimated_total_time:.2f} seconds")
-            sys.stdout.write(f"Estimated time remaining: {estimated_total_time:.2f} seconds\r")
-            sys.stdout.flush()
-
-        res, first_chunk_time = demix_track(config, model, mixture, device, first_chunk_time)
+        res = separate(mix.T)
 
         for output_id in output_ids:
             output_audio = res[output_id].T
@@ -209,7 +217,10 @@ def proc_folder(args) -> OutputManifest:
                              "a legacy ./models directory is also searched)")
     parser.add_argument("--input_folder", type=Path, required=True, help="folder with songs to process")
     parser.add_argument("--store_dir", type=Path, default=Path("outputs"), help="path to store model outputs")
-    parser.add_argument("--device", type=str, default=None, help="torch device string, defaults to auto")
+    parser.add_argument("--device", type=str, default=None,
+                        help=f"torch device: {DEVICE_CHOICES} (default: auto)")
+    parser.add_argument("--backend", type=str, default=None,
+                        help="compute backend: 'torch' (default), 'mlx', or 'auto'")
     parser.add_argument("--device_ids", nargs='+', type=int, help='optional list of gpu ids for DataParallel')
     if args is None:
         args = parser.parse_args()
@@ -219,9 +230,22 @@ def proc_folder(args) -> OutputManifest:
     else:
         args = parser.parse_args(args)
 
+    from .backends import resolve_backend_name
+
+    # Availability first, so an unavailable backend fails before a checkpoint is
+    # downloaded and verified rather than after.
+    resolve_backend_name(getattr(args, "backend", None))
+
     _resolve_model_assets(args, parser)
 
-    torch.backends.cudnn.benchmark = True
+    # Resolve for real now that the checkpoint's variation is known: `auto` must
+    # be able to skip a backend that has no head for this model.
+    backend_name = resolve_backend_name(
+        getattr(args, "backend", None), variation=getattr(args, "model_variation", None)
+    )
+
+    if torch.cuda.is_available():
+        torch.backends.cudnn.benchmark = True
 
     with open(args.config_path) as f:
         config = ConfigDict(yaml.load(f, Loader=SafeLoaderWithTuple))
@@ -243,7 +267,10 @@ def proc_folder(args) -> OutputManifest:
     else:
         model = model.to(device)
 
-    return run_folder(model, args, config, device, verbose=False)
+    from .backends import get_backend
+
+    backend = get_backend(backend_name)(model, config, device)
+    return separate_folder_with(backend.separate, args, config, verbose=False)
 
 
 def _resolve_model_assets(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
@@ -267,19 +294,35 @@ def _resolve_model_assets(args: argparse.Namespace, parser: argparse.ArgumentPar
     args.model_variation = checkpoint_metadata(model_key).get("variation")
 
 
+DEVICE_CHOICES = "None, 'auto', 'cpu', 'cuda', 'cuda:N', or 'mps'"
+
+
+def mps_available() -> bool:
+    """True when this torch build exposes a usable Apple Silicon MPS backend."""
+    backend = getattr(torch.backends, "mps", None)
+    return bool(backend is not None and backend.is_available())
+
+
 def _select_device(args: argparse.Namespace) -> torch.device:
     requested = getattr(args, "device", None)
     if isinstance(requested, torch.device):
         return requested
     if requested is None or requested == "auto":
+        # Legacy auto-selection, deliberately unchanged: MPS is opt-in, never
+        # promoted silently, so a Mac caller's outputs do not move under them.
         return torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     if requested == "cpu":
         return torch.device("cpu")
+    if requested == "mps":
+        if not mps_available():
+            raise RuntimeError("MPS was explicitly requested but is unavailable "
+                               "(needs an Apple Silicon Mac and an arm64 torch build)")
+        return torch.device("mps")
     if not isinstance(requested, str) or not requested.startswith("cuda"):
-        raise ValueError("device must be None, 'auto', 'cpu', 'cuda', or 'cuda:N'")
+        raise ValueError(f"device must be {DEVICE_CHOICES}")
     suffix = requested[4:]
     if suffix and (not suffix.startswith(":") or not suffix[1:].isdigit()):
-        raise ValueError("device must be None, 'auto', 'cpu', 'cuda', or 'cuda:N'")
+        raise ValueError(f"device must be {DEVICE_CHOICES}")
     if not torch.cuda.is_available():
         raise RuntimeError(f"CUDA was explicitly requested ({requested}) but is unavailable")
     if suffix and int(suffix[1:]) >= torch.cuda.device_count():

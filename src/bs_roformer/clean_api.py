@@ -31,6 +31,7 @@ class BSRoformerSession:
         config=None,
         models_dir=None,
         device=None,
+        backend=None,
         progress=True,
         checkpoint_url=None,
         checkpoint_sha256=None,
@@ -41,6 +42,8 @@ class BSRoformerSession:
         self.config_path = Path(config_path) if config_path else None
         self.models_dir = models_dir
         self.device = device
+        self.backend = backend
+        self._backend = None
         self.progress = progress
         self.checkpoint_url = checkpoint_url
         self.checkpoint_sha256 = checkpoint_sha256
@@ -64,9 +67,18 @@ class BSRoformerSession:
             raise RuntimeError("cannot load a closed BSRoformerSession")
         self._status = "loading"
         try:
-            from .download import ensure_model_assets, get_file_hash
+            from .backends import get_backend, resolve_backend_name
+
+            # Resolve the backend before any expensive work: an unavailable one
+            # must fail here, not after a 700MB checkpoint has been verified. The
+            # registry variation is read first so `auto` can skip a backend that
+            # has no head for this checkpoint instead of failing at construction.
+            self.backend = resolve_backend_name(
+                self.backend, variation=self._metadata().get("variation")
+            )
+
+            from .download import ensure_model_assets
             from .inference import SafeLoaderWithTuple
-            from .utils import get_model_from_config, load_checkpoint_state
 
             if self.model_path is None or self.config_path is None:
                 self.model_path, self.config_path = ensure_model_assets(
@@ -75,59 +87,98 @@ class BSRoformerSession:
                 )
             with self.config_path.open() as handle:
                 self._config = ConfigDict(yaml.load(handle, Loader=SafeLoaderWithTuple))
-            self._model = get_model_from_config(
-                "bs_roformer",
-                self._config,
-                model_variation=self._metadata().get("variation"),
-            )
 
-            artifacts = self._metadata().get("artifacts", [])
-            expected = self.checkpoint_sha256 or next(
-                (
-                    artifact["sha256"]
-                    for artifact in artifacts
-                    if artifact.get("kind") == "checkpoint"
-                ),
-                None,
-            )
-            if expected and get_file_hash(self.model_path).lower() != expected.lower():
-                raise ValueError(f"checkpoint SHA-256 mismatch for {self.model_path}")
-            state = load_checkpoint_state(self.model_path, map_location="cpu")
-            self._model.load_state_dict(state)
-            from .inference import _select_device
-            from argparse import Namespace
-            target = _select_device(Namespace(device=self.device))
-            self._model = self._model.to(target).eval()
-            self.device = target
+            if self.backend == "torch":
+                self._load_torch()
+            else:
+                self._verify_checkpoint_hash()
+                self._backend = get_backend(self.backend).from_checkpoint(
+                    config=self._config,
+                    checkpoint_path=self.model_path,
+                    variation=self._metadata().get("variation"),
+                )
+                self._model = self._backend.model
+                self.device = self._backend.resolved_device
             self._status = "ready"
             return self
         except Exception:
             self._status = "failed"
             raise
 
+    def _verify_checkpoint_hash(self):
+        """Refuse a checkpoint whose bytes do not match the recorded digest."""
+        from .download import get_file_hash
+
+        expected = self.checkpoint_sha256 or next(
+            (
+                artifact["sha256"]
+                for artifact in self._metadata().get("artifacts", [])
+                if artifact.get("kind") == "checkpoint"
+            ),
+            None,
+        )
+        if expected and get_file_hash(self.model_path).lower() != expected.lower():
+            raise ValueError(f"checkpoint SHA-256 mismatch for {self.model_path}")
+
+    def _load_torch(self):
+        """The shipped Torch construction path, preserved step for step."""
+        from argparse import Namespace
+
+        from .backends import get_backend
+        from .inference import _select_device
+        from .utils import get_model_from_config, load_checkpoint_state
+
+        self._model = get_model_from_config(
+            "bs_roformer",
+            self._config,
+            model_variation=self._metadata().get("variation"),
+        )
+        self._verify_checkpoint_hash()
+        self._model.load_state_dict(load_checkpoint_state(self.model_path, map_location="cpu"))
+        target = _select_device(Namespace(device=self.device))
+        self._model = self._model.to(target).eval()
+        self.device = target
+        self._backend = get_backend("torch")(self._model, self._config, target)
+
     def infer(self, input_folder, *, store_dir="outputs", verbose=False):
         if self._status != "ready" or self._model is None:
             raise RuntimeError("BSRoformerSession must be ready; call load() before infer()")
-        from .inference import run_folder
         from argparse import Namespace
 
-        return run_folder(
-            self._model,
+        from .inference import separate_folder_with
+
+        return separate_folder_with(
+            self._ensure_backend().separate,
             Namespace(input_folder=Path(input_folder), store_dir=Path(store_dir)),
             self._config,
-            self.device,
             verbose=verbose,
         )
 
+    def _ensure_backend(self):
+        """The backend, built on demand for sessions handed a model directly."""
+        if self._backend is None:
+            from .backends import get_backend, resolve_backend_name
+
+            self.backend = resolve_backend_name(self.backend)
+            self._backend = get_backend(self.backend)(self._model, self._config, self.device)
+        return self._backend
+
     def release(self):
+        if self._backend is not None:
+            self._backend.release()
+            self._backend = None
         if self._model is not None and hasattr(self._model, "cpu"):
             self._model.cpu()
         self._model = None
         try:
             import torch
 
+            from .inference import mps_available
+
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
+            if mps_available():
+                torch.mps.empty_cache()
         except ImportError:
             pass
         if self._status != "closed":
@@ -150,6 +201,8 @@ class BSRoformerSession:
         return {
             "model": self.model_name,
             "status": self._status,
+            "backend": self.backend,
+            "device": str(self.device) if self.device is not None else None,
             "model_loaded": self._model is not None,
             "models_dir": str(self.models_dir) if self.models_dir else None,
             "checkpoint_path": str(resolved_checkpoint) if resolved_checkpoint else None,
@@ -194,6 +247,7 @@ def separate_folder(input_folder, **kwargs):
         "config_path",
         "models_dir",
         "device",
+        "backend",
         "progress",
         "checkpoint_url",
         "checkpoint_sha256",

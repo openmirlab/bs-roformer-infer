@@ -10,11 +10,16 @@ demix_track splits long mixtures into overlapping chunks, applies a linear
 fade-in/out window per chunk to avoid audible seams at chunk boundaries, and
 normalizes the result by the accumulated window weight -- this is what lets
 inference run on audio far longer than a single forward pass could hold in memory.
+Its autocast is scoped to CUDA explicitly: the old torch.cuda.amp.autocast() call
+self-disabled off CUDA anyway, and keeping mixed precision away from the CPU and
+MPS paths stops the device choice from quietly changing numerical output.
 
-Reads: .bs_roformer.BSRoformer, torch
+Reads: .bs_roformer.BSRoformer, torch, contextlib.nullcontext
 """
 
 import time
+from contextlib import nullcontext
+
 import numpy as np
 import torch
 import sys
@@ -74,24 +79,34 @@ def get_windowing_array(window_size, fade_size, device):
     return window.to(device)
 
 def demix_track(config, model, mix, device, first_chunk_time=None):
-    # chunk_size can be in inference or audio section depending on config version
-    if hasattr(config.inference, 'chunk_size'):
-        C = config.inference.chunk_size
-    elif hasattr(config, 'audio') and hasattr(config.audio, 'chunk_size'):
-        C = config.audio.chunk_size
-    else:
-        C = 588800  # default chunk size
-    N = config.inference.num_overlap
-    step = C // N
-    fade_size = C // 10
-    border = C - step
+    # ChunkingPlan owns these numbers so a second backend cannot derive them
+    # independently and drift silently -- see backends/base.py.
+    from .backends.base import ChunkingPlan
+
+    plan = ChunkingPlan.from_config(config)
+    C = plan.chunk_size
+    N = plan.num_overlap
+    step = plan.step
+    fade_size = plan.fade_size
+    border = plan.border
 
     if mix.shape[1] > 2 * border and border > 0:
         mix = nn.functional.pad(mix, (border, border), mode='reflect')
 
     windowing_array = get_windowing_array(C, fade_size, device)
 
-    with torch.cuda.amp.autocast():
+    # Autocast is CUDA-only on purpose. The previous torch.cuda.amp.autocast()
+    # already disabled itself off CUDA ("CUDA is not available. Disabling
+    # autocast."), so scoping it explicitly is behaviour-identical -- and it keeps
+    # fp16 from silently changing MPS or CPU output, which article 2 would require
+    # to be an opt-in flag rather than a side effect of the device.
+    autocast = (
+        torch.autocast(device_type="cuda")
+        if torch.device(device).type == "cuda"
+        else nullcontext()
+    )
+
+    with autocast:
         with torch.no_grad():
             if config.training.target_instrument is not None:
                 req_shape = (1, ) + tuple(mix.shape)

@@ -10,3 +10,4 @@ build/
 uv.lock
 models/
 outputs/
+.refs/
