@@ -4,10 +4,82 @@
 
 BS-RoFormer-Infer provides a clean, lightweight API for running music source separation inference using Band-Split RoFormer models with automatic checkpoint management.
 
+## Backends and devices
+
+Two independent choices:
+
+| Argument | Values | Meaning |
+|---|---|---|
+| `backend` | `torch` (default), `mlx`, `auto` | which framework computes |
+| `device` | `None`, `auto`, `cpu`, `cuda`, `cuda:N`, `mps` | where Torch computes |
+
+```python
+from bs_roformer import BSRoformerSession
+
+with BSRoformerSession(device="mps") as session:      # Apple GPU, Torch
+    session.infer("songs/", store_dir="stems/")
+```
+
+```bash
+bs-roformer-infer --input_folder songs --device mps
+bs-roformer-infer --input_folder songs --backend auto
+```
+
+`backend` defaults to `torch`, so nothing changes unless you ask. `auto` picks an
+accelerated backend only when one is genuinely installed and falls back to Torch
+otherwise. Requesting a backend that cannot run here raises immediately — before
+any checkpoint is downloaded — rather than quietly using a different one.
+
+### The MLX backend
+
+Native Apple Silicon execution through [MLX](https://github.com/ml-explore/mlx).
+Install it with the extra, which is never part of the core install:
+
+```bash
+pip install "bs-roformer-infer[mlx]"
+```
+
+```python
+BSRoformerSession(backend="mlx").load()
+```
+
+Measured on an M2 against the default checkpoint: about **2.5x faster than Torch
+on MPS at roughly half the memory** (10.5 s versus 26.6 s per 13.35 s chunk;
+2.7 GB versus 5.3 GB), agreeing with the Torch path to `3.4e-07` maximum absolute
+error across all six stems. It reads the same sha256-verified checkpoint and
+config as the Torch path — there is no second catalog and no separate
+converted-weight cache.
+
+**All 24 registry models are supported**, including the four that need a
+non-standard mask-estimator head (`hyperace`, `fno`, `large_inst`). Each was
+verified against Torch on its real checkpoint: `3.9e-07`, `6.3e-07`, and `5.4e-07`
+maximum absolute error respectively.
+
+Speed varies by head — `fno` runs 3.7x faster than Torch on MPS and `hyperace`
+2.8x, while `large_inst` is currently about 2x *slower*. That one is a known
+performance gap, not a correctness one.
+
+It refuses, rather than gets wrong, a config whose `chunk_size` is not a multiple
+of its STFT hop — an alignment the chunked path silently assumes.
+
 ## Devices and lifecycle
 
 Legacy `None` and explicit `auto` select CUDA when available, otherwise CPU.
-Explicit `cpu`, `cuda`, and `cuda:N` are supported; unavailable CUDA raises.
+Explicit `cpu`, `cuda`, `cuda:N`, and `mps` are supported; an explicitly requested
+accelerator that is unavailable raises rather than being silently downgraded.
+
+**Apple Silicon.** Pass `device="mps"` (or `--device mps`) to run on the Mac GPU.
+It is opt-in on purpose: `auto` keeps its long-standing CUDA-else-CPU meaning, so
+upgrading does not move an existing Mac caller onto a different compute path.
+Measured on an M2 against the default checkpoint, MPS agrees with CPU to within
+`1.1e-07` maximum absolute error across all six stems, and processes a 13.35 s
+chunk in 26.6 s versus 90.7 s on CPU.
+
+MPS requires an **arm64 Python interpreter**. This is easy to get wrong: an
+x86_64 interpreter running under Rosetta reports `torch.backends.mps.is_available()`
+as `False`, so the device appears missing rather than broken. Check with
+`python -c "import platform; print(platform.machine())"` -- it must print `arm64`.
+
 `BSRoformerSession.release()` permits a later reload, while `close()` is terminal.
 Loading and `cache_info()` use the same checkpoint resolver; its package-owned
 `config/checkpoints.toml` remains the authoritative URL/integrity metadata.

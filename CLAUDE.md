@@ -9,7 +9,11 @@ architecture as a pip-installable, PyTorch-based CLI + Python API with
 automatic checkpoint management: no training code, no UVR GUI dependency.
 
 Devices preserve legacy `None` auto-selection and also accept explicit `auto`,
-`cpu`, `cuda`, and `cuda:N`; explicit CUDA errors must raise. Sessions may
+`cpu`, `cuda`, `cuda:N`, and `mps`; an explicitly requested accelerator that is
+unavailable must raise, never downgrade silently. `auto` deliberately still means
+CUDA-else-CPU -- it does not promote a Mac caller onto MPS, because that would
+move their outputs without their asking. MPS needs an arm64 interpreter; under
+Rosetta it reports as unavailable rather than failing loudly. Sessions may
 release and reload models, but closed sessions are terminal. `cache_info()` and
 loading share the download resolver, which reads package-owned checkpoints TOML.
 Given an input folder of WAV files, it produces separated stems (vocals,
@@ -57,8 +61,28 @@ Bundle").
   `DEFAULT_CKPT_BASE_URL`/`DEFAULT_CONFIG_BASE_URL` construction (legacy
   fallback path only; the old TRvlvr repo is dead -- see "Weights hosting"
   below).
+- `src/bs_roformer/backends/` -- the compute seam. `base.py` holds the
+  `SeparationBackend` protocol (one mixture in, named stems out) and
+  `BackendUnavailable`; `torch_backend.py` wraps the shipped `demix_track` path
+  without forking it; `__init__.py` resolves a backend by name. The seam sits at a
+  whole mixture rather than a chunk on purpose: chunked overlap-add accumulates
+  on-device, and a per-chunk seam would drag every accumulator back to the host.
+  Backend modules import lazily, so `import bs_roformer` never pulls in an
+  optional framework -- `tests/test_backends.py` asserts that.
+- `src/bs_roformer/mlx/` -- the vendored MLX BS-RoFormer (MIT, from
+  `ssmall256/mlx-audio-separator`, source revision recorded in the file headers),
+  imported only by `backends/mlx_backend.py`. `convert.py`'s
+  `load_converted_weights()` raises rather than loading partially: upstream's
+  `load_weights(strict=False)` silently drops unmatched keys, which leaves layers
+  at random initialisation and produces confident garbage. `model.py` carries one
+  deliberate deviation from upstream, `exact_zero_safe_rfft()` -- read its
+  docstring before touching it; removing it reintroduces a 1.455e-02 divergence on
+  any audio containing silence.
 - `src/bs_roformer/inference.py` -- the `bs-roformer-infer` CLI: folder-batch
   separation, chunked overlap-add, weights auto-resolve via `download.py`.
+  `separate_folder_with()` owns everything backend-agnostic (folder iteration,
+  stem naming, instrumental derivation, the manifest) so no backend can drift on
+  any of it; `run_folder()` keeps its signature and is the Torch entry into it.
 - `src/bs_roformer/utils.py` -- `demix_track`, `get_model_from_config`
   (converts YAML `!!python/tuple` lists back to real tuples post-safe-load).
 - `src/bs_roformer/config/checkpoints.toml` -- the live registry source and
@@ -132,6 +156,21 @@ Development below). Test files:
 - `tests/test_weights_ux.py` -- sha256 verification wiring (a wrong hash
   must delete the file, not ship it) and models-dir resolution precedence,
   offline (temp files + monkeypatched `requests`).
+- `tests/test_device_parity.py` -- real-checkpoint CPU-vs-MPS output comparison,
+  the article-2 accuracy gate for the MPS path. Marked `realweights` and
+  **deselected by default**; it never downloads and skips cleanly when the
+  checkpoint is absent or the host has no MPS. Run explicitly on an Apple Silicon
+  Mac: `pytest -m realweights tests/test_device_parity.py -v` (~2 min; recorded
+  worst-stem divergence 1.136e-07 on M2 / torch 2.13.0).
+- `tests/test_mlx_parity.py` -- Torch-vs-MLX parity on the real checkpoint across
+  three tails: signal, zero-padded, and near-silent. The silent cases are the
+  point: clean signal agreed to 4.0e-07 while a zero-padded tail diverged by
+  1.455e-02, and every track's final chunk is padded. Marked `realweights`,
+  deselected by default, needs the `[mlx]` extra. Run on an Apple Silicon Mac:
+  `pytest -m realweights tests/test_mlx_parity.py -v` (~95 s).
+- `tests/test_backends.py` -- backend resolution, refusal semantics (unsupported
+  variation, unaligned chunking), and the assertion that `import bs_roformer`
+  pulls in no optional framework. Offline, hardware-independent.
 - `tests/test_weights_liveness.py` -- HEADs every registry URL for real.
   Marked `network` and **deselected by default**
   (`addopts = "-m 'not network'"` in pyproject.toml); CI never needs network

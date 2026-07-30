@@ -2,6 +2,86 @@
 
 ## Unreleased
 
+### Backend selection
+
+- Added a `backend` argument alongside `device`, on `BSRoformerSession`,
+  `BSRoformerSeparator`, `separate_folder()`, and the CLI (`--backend`). It
+  accepts `torch` (default), `mlx`, and `auto`. `device` keeps its exact existing
+  Torch meaning; the two are independent axes.
+- Requesting an unavailable backend raises `BackendUnavailable` immediately --
+  before any checkpoint is resolved or downloaded -- and is never silently
+  swapped for a different one. `auto` is the single place a fallback happens,
+  because there it is what the caller asked for.
+- `cache_info()` now reports the resolved `backend` and `device`.
+- Internal: chunked inference moved behind a `SeparationBackend` seam
+  (`bs_roformer.backends`). `run_folder()` keeps its signature and behaviour;
+  the backend-agnostic half is now `separate_folder_with()`. Verified
+  output-identical against the pre-refactor code on the real default checkpoint:
+  all seven outputs match to exactly `0.0` maximum absolute error.
+- Added an MLX backend behind the optional `[mlx]` extra (`mlx`, `mlx-spectro`),
+  with the MLX BS-RoFormer model vendored from `mlx-audio-separator` (MIT,
+  ssmall256) rather than taken as a dependency. It consumes this package's own
+  sha256-verified checkpoint and config -- no second catalog, no separate
+  converted-weight cache. Weight conversion raises rather than loading partially:
+  upstream's `strict=False` silently drops unmatched keys, which would leave
+  layers at random initialisation and produce confident garbage.
+- Ported all three non-standard mask-estimator heads to MLX (`large_inst`, `fno`,
+  `hyperace`), so **the MLX backend now covers all 24 registry models**. Verified
+  end to end against Torch on each real checkpoint: `5.364e-07`, `3.874e-07`, and
+  `6.258e-07` maximum absolute error. `BSRoformerMLX` now takes an explicit
+  `mask_estimator_variant` instead of swallowing it through `**kwargs` and
+  silently building the stock head, and variant support is measured from which
+  head modules exist rather than declared.
+- The MLX backend still refuses, rather than mis-runs, a config whose `chunk_size`
+  is not a multiple of its STFT hop — an alignment the chunked path silently
+  assumes — and any variation with no head module present.
+- Known performance gap, not a correctness one: the `large_inst` head runs about
+  2x slower under MLX than under Torch on MPS, where `fno` is 3.7x faster and
+  `hyperace` 2.8x faster.
+- Worked around a correctness bug in MLX 0.31.2's Metal `rfft` kernel, which
+  returns roughly `4.5e-07` instead of `0` for a frame whose true value is exactly
+  zero. That artifact is far more damaging than its size suggests: the model's
+  normalization discards magnitude, so pure numerical noise was normalized into a
+  full-scale random feature vector, and time-axis attention then spread it across
+  every position — silence at the end of a chunk corrupted the output at the
+  start. Since every track's final chunk is padded, this affected ordinary use.
+  Measured against Torch on the real checkpoint: `1.455e-02` maximum absolute
+  error before, `2.2e-07` after, with no measurable speed cost. Guarded by
+  `tests/test_mlx_parity.py`, whose silent-tail cases fail loudly if the
+  workaround is removed before MLX fixes the kernel.
+- Verified MLX-vs-Torch parity end to end on the real default checkpoint through
+  the public session API: all seven outputs within `3.4e-07` maximum absolute
+  error, at about 2.5x the speed and half the memory of Torch on MPS.
+
+### Apple Silicon (MPS) support
+
+- **Contract change, called out deliberately:** `device="mps"` previously raised
+  `ValueError` and a test asserted that it must. That negative contract is now
+  reversed. Every load-bearing operator in the model was measured to run natively
+  on MPS with no CPU fallback, and CPU-vs-MPS output on the real default
+  checkpoint agrees to within `1.136e-07` maximum absolute error across all six
+  stems (Apple M2, torch 2.13.0).
+- `device` now accepts `mps` alongside `None`, `auto`, `cpu`, `cuda`, `cuda:N`,
+  in the Python API, the session, and the `--device` CLI flag. An explicitly
+  requested but unavailable accelerator raises; it is never downgraded silently.
+- `device="auto"` is **unchanged**: still CUDA-else-CPU. Mac callers are not
+  promoted onto MPS automatically, so an upgrade cannot move existing outputs.
+- `BSRoformerSession.release()` now frees the MPS cache as well as the CUDA one.
+- `demix_track`'s autocast is scoped to CUDA explicitly. Off CUDA the previous
+  `torch.cuda.amp.autocast()` already disabled itself, so behaviour is identical
+  -- but mixed precision can no longer reach the CPU or MPS paths as a side
+  effect of the device choice.
+- The attention backend-pinning context manager is entered only for CUDA tensors.
+  Its flags only ever governed CUDA kernel selection, and entering it elsewhere
+  emitted a deprecation warning on every attention call.
+- `torch.backends.cudnn.benchmark` is set only when CUDA is present.
+- Added `tests/test_device_parity.py`, a real-checkpoint CPU-vs-MPS accuracy gate
+  marked `realweights` and deselected by default; it never downloads and skips
+  when the checkpoint or the hardware is absent.
+- Documented that MPS requires an **arm64 Python interpreter** -- under Rosetta
+  it reports as unavailable rather than failing loudly, which reads as "broken"
+  rather than "wrong interpreter".
+
 - Added the MVSep Mega 53-stem BS-RoFormer checkpoint from
   `ZFTurbo/Music-Source-Separation-Training` release `v1.0.21`, with recorded
   SHA-256/size metadata for both checkpoint and config.
