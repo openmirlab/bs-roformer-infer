@@ -242,3 +242,24 @@ Coverage goes 20/24 → 24/24.
 | O2 | how the pilot Non-goal is amended | Phase 3 merge |
 | O3 | does `backend="auto"` prefer MLX on Apple Silicon | default only |
 | O4 | does a future major flip `device="auto"` to prefer MPS on Mac | not this campaign |
+
+---
+
+## Post-merge follow-ups (recorded 2026-07-31, from the 7-package audit + fable re-plan)
+
+Deliberately NOT done in the campaign window. Each was locked (pin-test or
+truthful docstring) instead of fixed, because fixing touches shipped, verified
+paths and re-opens article-2 verification per package.
+
+| # | Item | Where | Lock in place today |
+|---|---|---|---|
+| P1 | Migrate the Torch path onto `ChunkingPlan` | mdxnet (`inference.py:243`), scnet (`runtime.py:60`) | cross-check tests assert inline == plan |
+| P2 | Extract the byte-identical SD/SU trunk (666 LOC ×3) verbatim, fixture-gated | scnet `_model/` | `test_trunk_identity.py` pins all three copies |
+| P3 | Dedupe `_v2/utils.py` (80-85% reformatted v1 copy; 3-4% genuinely v2) | bandit | dead 25% already deleted; live copy documented |
+| P4 | Delete `LinearAttention` + `pack_one`/`unpack_one` (unreachable) | bs-roformer `mlx/attention.py`, `ops.py` | flagged in CLAUDE.md, kept as upstream-shaped surface |
+| P5 | Consolidate bs-mamba2's STFT constants into one owner | bs-mamba2 `audio.py` / `mlx_backend.py` | `test_constants_cross_check.py` |
+| P6 | Share one streaming-sha256 helper (keep both comparison semantics) | demucs `repo.py` / `checkpoint_runtime.py` | header cross-references explain the split |
+
+USER decisions still pending, untouched: pushing any branch; re-hosting the
+dead official-vocals weights URL (NOASSERTION licence review first);
+PyPI releases.
