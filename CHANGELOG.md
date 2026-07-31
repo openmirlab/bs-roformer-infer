@@ -68,6 +68,16 @@
 - Verified MLX-vs-Torch parity end to end on the real default checkpoint through
   the public session API: all seven outputs within `3.4e-07` maximum absolute
   error, at about 2.5x the speed and half the memory of Torch on MPS.
+- Fixed three backend defects surfaced by porting this package's pattern to
+  `melband-roformer-infer` (recorded as D13 in `brain/decisions.md`): `--backend
+  mlx` was broken through the CLI -- `proc_folder()` built a Torch model
+  unconditionally and handed it to whichever backend resolved, so a non-Torch
+  backend ended up holding the wrong framework's model entirely; `device="cuda"`
+  with `backend="mlx"` was never actually refused despite `architecture.md`
+  documenting it as a failure mode the design must not have, now enforced by
+  `MLXBackend._select_device`; and `BSRoformerSession.release()` called `.cpu()`
+  twice on the same model. None of the three were caught by this package's own
+  tests.
 
 ### Apple Silicon (MPS) support
 

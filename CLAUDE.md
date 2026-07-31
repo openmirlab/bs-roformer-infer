@@ -117,6 +117,10 @@ Bundle").
   `separate_folder_with()` owns everything backend-agnostic (folder iteration,
   stem naming, instrumental derivation, the manifest) so no backend can drift on
   any of it; `run_folder()` keeps its signature and is the Torch entry into it.
+- `src/bs_roformer/clean_api.py` -- `BSRoformerSession`, the public Python
+  facade README leans on: explicit session lifecycle, lazy loading, and a thin
+  inference call that delegates to `inference.run_folder()` and surfaces the
+  exact output files it wrote rather than inventing metadata from the registry.
 - `src/bs_roformer/utils.py` -- `demix_track`, `get_model_from_config`
   (converts YAML `!!python/tuple` lists back to real tuples post-safe-load).
 - `src/bs_roformer/config/checkpoints.toml` -- the live registry source and
@@ -130,7 +134,7 @@ Bundle").
 
 ## Weights hosting (org constitution article 4)
 
-All 23 registry models download from third-party hosts at runtime; none are
+All 24 registry models download from third-party hosts at runtime; none are
 committed to this repo. Provenance has moved twice already, both discovered
 by outage rather than announcement:
 
@@ -237,7 +241,8 @@ headers in sync as files change.
 
 ```bash
 uv sync --extra dev      # install package + dev deps (pytest, ruff)
-uv run pytest -q         # unit tests (network-marked tests deselected)
+uv run pytest -q         # unit tests (network- and realweights-marked tests deselected --
+                          # the latter need real hardware and real checkpoints)
 uv run ruff check .      # lint
 ```
 

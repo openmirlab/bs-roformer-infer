@@ -52,10 +52,11 @@ error across all six stems. It reads the same sha256-verified checkpoint and
 config as the Torch path — there is no second catalog and no separate
 converted-weight cache.
 
-**All 24 registry models are supported**, including the four that need a
-non-standard mask-estimator head (`hyperace`, `fno`, `large_inst`). Each was
-verified against Torch on its real checkpoint: `3.9e-07`, `6.3e-07`, and `5.4e-07`
-maximum absolute error respectively.
+**All 24 registry models are supported**, including four checkpoints that need
+one of three non-standard mask-estimator heads — `hyperace` (two checkpoints),
+`fno`, `large_inst`. Each head was verified against Torch on its real
+checkpoint: `hyperace` `6.3e-07`, `fno` `3.9e-07`, `large_inst` `5.4e-07`
+maximum absolute error.
 
 Speed varies by head — `fno` runs 3.7x faster than Torch on MPS and `hyperace`
 2.8x, while `large_inst` is currently about 2x *slower*. That one is a known
@@ -66,9 +67,10 @@ of its STFT hop — an alignment the chunked path silently assumes.
 
 MPS and MLX both need an **arm64 Python interpreter**. Under Rosetta/x86_64
 they report as unavailable rather than failing loudly — an x86_64 interpreter
-makes `torch.backends.mps.is_available()` return `False`, and MLX fails to
-run correctly, so an accelerated path just looks absent rather than
-misconfigured. This is easy to hit without noticing: an x86_64 `uv` resolves
+makes `torch.backends.mps.is_available()` return `False`, and MLX ships no
+macOS x86_64 wheel at all, so it cannot even be installed there. Either way,
+an accelerated path just looks absent rather than misconfigured. This is easy
+to hit without noticing: an x86_64 `uv` resolves
 x86_64 interpreters, so `uv sync` can silently produce an environment where
 the accelerated paths structurally cannot exist. Check with
 `python -c "import platform; print(platform.machine())"` — it must print
@@ -165,8 +167,8 @@ Also available as a preprint: [arXiv:2309.02612](https://arxiv.org/abs/2309.0261
 
 ## Scope
 
-**In scope**: inference (forward pass) with the BS-RoFormer architecture; an
-23-model registry spanning multi-stem, 53-stem mega, four-stem, vocals, karaoke,
+**In scope**: inference (forward pass) with the BS-RoFormer architecture; a
+24-model registry spanning multi-stem, 53-stem mega, four-stem, vocals, karaoke,
 instrumental, and de-reverb
 checkpoints; automatic, manual, and configurable-directory checkpoint
 management with sha256 verification; a standalone download CLI.
@@ -399,7 +401,8 @@ pip install -e ".[dev]"
 ```
 
 ```bash
-uv run pytest -q       # unit tests (network-marked tests deselected by default)
+uv run pytest -q       # unit tests (network- and realweights-marked tests deselected by
+                        # default -- the latter need real hardware and real checkpoints)
 uv run ruff check .    # lint
 ```
 
