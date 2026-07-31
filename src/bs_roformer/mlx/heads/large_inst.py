@@ -5,23 +5,24 @@ time/frequency Transformer pairs (depth 1 each, heads/dim_head hard-coded to
 8/64 exactly as the Torch original hard-codes them -- the constructor
 signature here intentionally has no way to override that, matching the Torch
 call site) run before the per-band mask MLP. Built mostly from blocks already
-vendored in ``..model`` (``L2Norm``, ``MLP``, ``FeedForward``,
-``TransformerLayer``, the einops-lite ``pack``/``unpack``/``rearrange``
-helpers) rather than reimplementing them.
+owned by the trunk (``..attention.L2Norm``, ``..bands.MLP``,
+``..attention.FeedForward``, ``..attention.TransformerLayer``, the einops-lite
+``..ops.pack``/``..ops.unpack``/``..ops.rearrange`` helpers) rather than
+reimplementing them.
 
-The one block NOT reused as-is is ``..model.Attention``: this checkpoint's
+The one block NOT reused as-is is ``..attention.Attention``: this checkpoint's
 own two ``RotaryEmbedding`` modules (one shared across the four time-axis
 blocks, one shared across the four freq-axis blocks) have ``learned_freq``
 drift baked in by training -- their saved ``rotary_embed.freqs`` do NOT match
-the theta=10000 default that ``..model.Attention`` hard-codes for
+the theta=10000 default that ``..attention.Attention`` hard-codes for
 ``rotary_embed=True``. Verified against the real ``bs_large_v2_inst.ckpt``
 checkpoint: the stored per-axis freqs differ from the theoretical theta=10000
 formula by up to ~0.0088 and are not even monotonic (a fixed formula can
 never go negative), which only a trained parameter explains. Reusing
-``..model.Attention`` unmodified for this head compounds that mismatch
+``..attention.Attention`` unmodified for this head compounds that mismatch
 across 8 attention layers into a >1.0 max-abs-error output (measured while
 porting this file -- see the parity numbers reported alongside it).
-``_LearnedRopeAttention`` below subclasses ``..model.Attention`` (so it
+``_LearnedRopeAttention`` below subclasses ``..attention.Attention`` (so it
 inherits its exact weight-compatible submodule layout: ``norm``, ``to_qkv``,
 ``to_gates``, ``to_out``) and overrides only ``__call__`` to rotate Q/K with
 an explicit loaded ``rope_freqs`` array via ``mx.fast.rope(freqs=...)``
@@ -37,9 +38,9 @@ values). ``rope_freqs`` is stored here in torch's native convention and
 inverted at call time, so the loaded weight matches the checkpoint verbatim
 and the inversion stays local to this file.
 
-Reads: ..model.Attention, ..model.L2Norm, ..model.MLP, ..model.FeedForward,
-..model.TransformerLayer, ..model.pack, ..model.unpack, ..model.rearrange,
-mlx.core, mlx.nn
+Reads: ..attention.Attention, ..attention.L2Norm, ..attention.FeedForward,
+..attention.TransformerLayer, ..bands.MLP, ..ops.pack, ..ops.unpack,
+..ops.rearrange, mlx.core, mlx.nn
 """
 
 import os
@@ -48,20 +49,13 @@ from typing import Tuple  # noqa: UP035
 import mlx.core as mx
 import mlx.nn as nn  # noqa: PLR0402
 
-from ..model import (
-    MLP,
-    Attention,
-    FeedForward,
-    L2Norm,
-    TransformerLayer,
-    pack,
-    rearrange,
-    unpack,
-)
+from ..attention import Attention, FeedForward, L2Norm, TransformerLayer
+from ..bands import MLP
+from ..ops import pack, rearrange, unpack
 
 
 class _LearnedRopeAttention(Attention):
-    """``..model.Attention`` with this checkpoint's own learned RoPE frequencies.
+    """``..attention.Attention`` with this checkpoint's own learned RoPE frequencies.
 
     See the module docstring for why this cannot just be ``Attention(...,
     rotary_embed=True)``. Everything except the RoPE call is inherited
@@ -110,7 +104,7 @@ class _LargeInstPair(nn.Module):
 
     Torch's depth is always 1 for these four blocks (hard-coded, independent
     of the mask MLP's own ``depth``), so this holds a single
-    ``TransformerLayer`` per axis rather than a full ``..model.Transformer``
+    ``TransformerLayer`` per axis rather than a full ``..attention.Transformer``
     depth-loop wrapper.
     """
 

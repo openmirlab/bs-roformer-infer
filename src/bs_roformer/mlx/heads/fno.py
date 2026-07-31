@@ -12,7 +12,7 @@ per-position linear map over channels, done here with one ``mx.einsum`` in
 throughout. The one correctness-critical piece is ``_SpectralConv1D``, which
 truncates/multiplies/pads in the rfft domain like Torch's ``SpectralConv1D``
 and wraps its ``mx.fft.rfft`` call in ``exact_zero_safe_rfft()`` (imported
-from ``..model``): MLX 0.31.2's Metal rfft kernel returns roughly 4.5e-07
+from ``..rfft_guard``): MLX 0.31.2's Metal rfft kernel returns roughly 4.5e-07
 instead of exact 0 for an all-zero band, and the un-normalized fp32 arithmetic
 through the two skip-summed branches here would otherwise carry that artifact
 into the mask. ``depth``/``mlp_expansion_factor`` are accepted only to match
@@ -23,13 +23,14 @@ mapping rules this head's module tree requires (the two existing
 ``mask_estimators.`` / ``to_freqs.N.0.`` rules already do the outer
 restructuring; the FNO-internal submodule lists still need their own rules).
 
-Reads: mlx.core, mlx.nn, ..model (ExactGELU, exact_zero_safe_rfft)
+Reads: mlx.core, mlx.nn, ..attention (ExactGELU), ..rfft_guard (exact_zero_safe_rfft)
 """
 
 import mlx.core as mx
 import mlx.nn as nn  # noqa: PLR0402
 
-from ..model import ExactGELU, exact_zero_safe_rfft
+from ..attention import ExactGELU
+from ..rfft_guard import exact_zero_safe_rfft
 
 
 class _Conv1x1(nn.Module):

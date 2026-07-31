@@ -69,15 +69,35 @@ Bundle").
   on-device, and a per-chunk seam would drag every accumulator back to the host.
   Backend modules import lazily, so `import bs_roformer` never pulls in an
   optional framework -- `tests/test_backends.py` asserts that.
-- `src/bs_roformer/mlx/` -- the vendored MLX BS-RoFormer (MIT, from
-  `ssmall256/mlx-audio-separator`, source revision recorded in the file headers),
-  imported only by `backends/mlx_backend.py`. `convert.py`'s
-  `load_converted_weights()` raises rather than loading partially: upstream's
-  `load_weights(strict=False)` silently drops unmatched keys, which leaves layers
-  at random initialisation and produces confident garbage. `model.py` carries one
-  deliberate deviation from upstream, `exact_zero_safe_rfft()` -- read its
-  docstring before touching it; removing it reintroduces a 1.455e-02 divergence on
-  any audio containing silence.
+- `src/bs_roformer/mlx/` -- the MLX BS-RoFormer, imported only by
+  `backends/mlx_backend.py`. Originally vendored verbatim from
+  `ssmall256/mlx-audio-separator` (MIT; source revision recorded in `model.py`'s
+  header for attribution); the project now owns and has reshaped this code, so it
+  is no longer resynced against upstream. Split by knowledge, not by the single
+  vendored file it used to be:
+  - `model.py` -- the trunk only: `BSRoformerMLX.__init__`/`__call__` and their
+    private forward helpers (STFT -> band-split -> transformer stack -> mask
+    estimation -> masked iSTFT). Upstream's `separate()`,
+    `separate_audio_chunked()`, and module-level `create_compiled_model()` were
+    deleted here -- verified zero inbound callers anywhere in the package; the
+    production path is `__call__` alone, called by `backends/mlx_backend.py`.
+  - `attention.py` -- `L2Norm`, `Attention`, `LinearAttention` (currently
+    unreachable -- `Transformer`'s `linear_attn` flag is always `False` at every
+    call site, kept as upstream-shaped surface rather than pruned), `FeedForward`,
+    `TransformerLayer`, `Transformer`, `ExactGELU`.
+  - `bands.py` -- `BandSplit`, `MaskEstimator`, `MLP`, `BSRoformerBlock`,
+    `DEFAULT_FREQS_PER_BANDS`.
+  - `ops.py` -- the einops-lite `pack`/`unpack`/`rearrange` tensor primitives
+    plus small helpers (`exists`, `default`, `env_enabled`,
+    `batched_group_linear`).
+  - `rfft_guard.py` -- `exact_zero_safe_rfft()`, MLX 0.31.2's Metal rfft-kernel
+    workaround. Not model architecture -- read its docstring before touching it;
+    removing it reintroduces a 1.455e-02 divergence on any audio containing
+    silence. `model.py`'s `__call__` and `heads/fno.py`'s `_SpectralConv1D` both
+    depend on it.
+  `convert.py`'s `load_converted_weights()` raises rather than loading partially:
+  upstream's `load_weights(strict=False)` silently drops unmatched keys, which
+  leaves layers at random initialisation and produces confident garbage.
 - `src/bs_roformer/inference.py` -- the `bs-roformer-infer` CLI: folder-batch
   separation, chunked overlap-add, weights auto-resolve via `download.py`.
   `separate_folder_with()` owns everything backend-agnostic (folder iteration,

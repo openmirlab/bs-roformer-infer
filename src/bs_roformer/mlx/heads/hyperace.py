@@ -2,7 +2,7 @@
 
 Mirrors ``bs_roformer.hyperace.HyperACEMaskEstimator``: a per-band GLU-MLP
 mask path (identical in shape to the stock ``MaskEstimator``, reused via
-``..model.MLP`` so it needs no new weight-mapping rule) added to the output of
+``..bands.MLP`` so it needs no new weight-mapping rule) added to the output of
 ``SegmModel``, a small conv/hypergraph segmentation network (Backbone ->
 HyperACE hypergraph fusion -> Decoder -> ProgressiveUpsampleHead) that treats
 the band-split trunk output as an image: time is height, band index is width,
@@ -32,7 +32,7 @@ feature dim is channels. Two layout facts drive every class below:
    error (float32 roundoff), see every call site's inline comment for the
    ``mode``/``align_corners`` it matches.
 
-Reuses ``..model``'s ``MLP`` for the per-band mask path so that submodule
+Reuses ``..bands``'s ``MLP`` for the per-band mask path so that submodule
 needs no new conversion rule beyond the ones the stock ``MaskEstimator``
 already has. Every other submodule here is new and uses plain Python lists
 (not ``mlx.nn.Sequential``) wherever Torch uses ``nn.Sequential``/
@@ -42,7 +42,7 @@ exactly like Torch's (e.g. ``high_order_branch.0.cv1...``) with no
 the porting report for the exact conv-weight-transpose and reshape rules
 ``convert.py`` still needs (not implemented here).
 
-Reads: ..model.MLP, mlx.core, mlx.nn
+Reads: ..bands.MLP, mlx.core, mlx.nn
 """
 
 from __future__ import annotations
@@ -52,7 +52,7 @@ from typing import List, Tuple  # noqa: UP035
 import mlx.core as mx
 import mlx.nn as nn  # noqa: PLR0402
 
-from ..model import MLP
+from ..bands import MLP
 
 
 def _autopad(k, p=None):

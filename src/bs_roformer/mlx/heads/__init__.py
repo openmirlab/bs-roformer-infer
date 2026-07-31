@@ -10,7 +10,7 @@ Heads are imported lazily: a checkpoint that never asks for HyperACE should not 
 for importing it, and a missing head must fail by name rather than at some later
 shape mismatch.
 
-Reads: ..model (MaskEstimator), .large_inst, .fno, .hyperace (all lazily)
+Reads: ..bands (MaskEstimator), .large_inst, .fno, .hyperace (all lazily)
 """
 
 from __future__ import annotations
@@ -59,7 +59,7 @@ def build_mask_estimator(
     variant = variant or "mlp"
 
     if variant == "mlp":
-        from ..model import MaskEstimator
+        from ..bands import MaskEstimator
 
         return MaskEstimator(
             dim=dim,

@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### MLX model ownership
+
+- `src/bs_roformer/mlx/model.py`, previously vendored verbatim from
+  `ssmall256/mlx-audio-separator` for upstream re-sync, is now owned and
+  reshaped by this project rather than resynced. The header's previous "only
+  change from upstream is this header" claim was false and dangerous:
+  `exact_zero_safe_rfft()` is a deliberate deviation, and a re-sync guided by
+  that claim would have deleted it and reintroduced a 1.455e-02 divergence on
+  any audio containing silence. Split by knowledge into `model.py` (trunk
+  only), `attention.py`, `bands.py`, `ops.py`, and `rfft_guard.py`; deleted
+  `separate()`, `separate_audio_chunked()`, and `create_compiled_model()` as
+  unreachable (zero inbound callers; the production path is `__call__` alone).
+  Verified behaviour-preserving: `pytest -m realweights tests/test_mlx_parity.py`
+  passes with byte-identical max-abs-error numbers before and after
+  (`2.831e-07` / `2.226e-07` / `1.937e-07`).
+
 ### Backend selection
 
 - Added a `backend` argument alongside `device`, on `BSRoformerSession`,
