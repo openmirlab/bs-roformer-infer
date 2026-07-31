@@ -95,6 +95,20 @@ Bundle").
     removing it reintroduces a 1.455e-02 divergence on any audio containing
     silence. `model.py`'s `__call__` and `heads/fno.py`'s `_SpectralConv1D` both
     depend on it.
+  - `heads/` -- mask-estimator heads, one owner for variant selection
+    (`heads/__init__.py`'s `VARIANTS` registry, mirroring Torch's
+    `_create_mask_estimator`; heads import lazily so a checkpoint that never
+    asks for one doesn't pay to import it). `fno.py` -- `FNOMaskEstimator`,
+    the FNO port (kernel-size-1 convs done as `mx.einsum` rather than
+    `mlx.nn.Conv1d`, to avoid an NCL<->NLC transpose fight with the FFT).
+    `hyperace.py` -- `HyperACEMaskEstimator`, the conv/hypergraph
+    segmentation port (Backbone -> HyperACE fusion -> Decoder ->
+    ProgressiveUpsampleHead over NHWC, matching MLX's native conv layout so
+    no permute is needed at the trunk boundary). `large_inst.py` --
+    `LargeInstMaskEstimator`, four alternating time/frequency Transformer
+    pairs built from trunk blocks (`attention.py`, `bands.py::MLP`,
+    `ops.py`), with its own two `RotaryEmbedding` instances tuned for this
+    head rather than reusing the trunk's.
   `convert.py`'s `load_converted_weights()` raises rather than loading partially:
   upstream's `load_weights(strict=False)` silently drops unmatched keys, which
   leaves layers at random initialisation and produces confident garbage.
@@ -199,8 +213,15 @@ Development below). Test files:
   tools/check_weights_liveness.py` directly.
 
 CI (`.github/workflows/test.yml`) matrixes Python 3.10-3.13, all
-`not network`-marked, all locally green as of 2026-07-12 (27 passed, 19
-deselected on every version).
+`not network`-marked; run `uv run pytest -q` to get current pass/deselect
+counts rather than trusting numbers recorded here.
+
+**arm64 note**: `test_device_parity.py` and `test_mlx_parity.py` skip
+silently under an x86_64 interpreter (including Python running under
+Rosetta on Apple Silicon) -- a green suite on the wrong arch exercises
+neither MPS nor MLX and proves nothing about those paths. Confirm `python -c
+"import platform; print(platform.machine())"` says `arm64` before trusting a
+realweights run.
 
 ## File-top header convention
 

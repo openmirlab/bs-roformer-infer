@@ -6,6 +6,8 @@ silently swapped, and that the default import path stays free of optional
 frameworks.
 """
 import argparse
+import importlib.util
+import subprocess
 import sys
 
 import pytest
@@ -39,7 +41,14 @@ def test_unavailable_backend_raises_rather_than_substituting():
 
     A silent substitution is only ever discovered by noticing the wrong hardware
     was busy, which is exactly the failure article 4b forbids for devices.
+
+    Only meaningful where MLX is genuinely absent: with the [mlx] extra
+    installed the request succeeds, which is the correct behaviour, not a
+    regression. Guarded so a shared MLX-capable env cannot report this as a
+    failure.
     """
+    if _mlx_installed():
+        pytest.skip("MLX is installed here; this asserts the unavailable path")
     with pytest.raises(BackendUnavailable):
         resolve_backend_name("mlx")
 
@@ -234,10 +243,28 @@ class _CliArgs(argparse.Namespace):
         self.__dict__.update(kwargs)
 
 
-def test_importing_the_package_does_not_pull_in_an_optional_framework():
-    """`pip install bs-roformer-infer` must stay MLX-free and import-clean."""
-    import bs_roformer  # noqa: F401
+def _mlx_installed() -> bool:
+    return importlib.util.find_spec("mlx") is not None
 
-    optional = {"mlx", "mlx_spectro", "mlx_audio_io", "mlx_audio_separator"}
-    leaked = sorted({m.split(".")[0] for m in sys.modules} & optional)
+
+def test_importing_the_package_does_not_pull_in_an_optional_framework():
+    """`pip install bs-roformer-infer` must stay MLX-free and import-clean.
+
+    Runs in a SUBPROCESS on purpose. In-process this test is order-dependent:
+    any earlier test that legitimately calls MLXBackend.is_available() imports
+    mlx as a side effect, so a clean import path reads as a leak (and, worse, a
+    genuine leak could be masked by import caching in the other direction). It
+    passed alone and failed in-suite before this fix -- a test that can be wrong
+    in both directions guards nothing.
+    """
+    probe = (
+        "import sys, bs_roformer; "
+        "optional = {'mlx', 'mlx_spectro', 'mlx_audio_io', 'mlx_audio_separator'}; "
+        "leaked = sorted({m.split('.')[0] for m in sys.modules} & optional); "
+        "print(','.join(leaked))"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", probe], capture_output=True, text=True, check=True
+    )
+    leaked = [name for name in result.stdout.strip().split(",") if name]
     assert not leaked, f"import bs_roformer pulled in optional frameworks: {leaked}"
