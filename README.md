@@ -29,6 +29,8 @@ bs-roformer-infer --input_folder songs --backend auto
 accelerated backend only when one is genuinely installed and falls back to Torch
 otherwise. Requesting a backend that cannot run here raises immediately — before
 any checkpoint is downloaded — rather than quietly using a different one.
+`backend="mlx"` owns its own Apple Silicon execution and accepts only `device`
+of `auto`/`mps` (or none), refusing anything else rather than ignoring it.
 
 ### The MLX backend
 
@@ -62,6 +64,16 @@ performance gap, not a correctness one.
 It refuses, rather than gets wrong, a config whose `chunk_size` is not a multiple
 of its STFT hop — an alignment the chunked path silently assumes.
 
+MPS and MLX both need an **arm64 Python interpreter**. Under Rosetta/x86_64
+they report as unavailable rather than failing loudly — an x86_64 interpreter
+makes `torch.backends.mps.is_available()` return `False`, and MLX fails to
+run correctly, so an accelerated path just looks absent rather than
+misconfigured. This is easy to hit without noticing: an x86_64 `uv` resolves
+x86_64 interpreters, so `uv sync` can silently produce an environment where
+the accelerated paths structurally cannot exist. Check with
+`python -c "import platform; print(platform.machine())"` — it must print
+`arm64`.
+
 ## Devices and lifecycle
 
 Legacy `None` and explicit `auto` select CUDA when available, otherwise CPU.
@@ -74,11 +86,6 @@ upgrading does not move an existing Mac caller onto a different compute path.
 Measured on an M2 against the default checkpoint, MPS agrees with CPU to within
 `1.1e-07` maximum absolute error across all six stems, and processes a 13.35 s
 chunk in 26.6 s versus 90.7 s on CPU.
-
-MPS requires an **arm64 Python interpreter**. This is easy to get wrong: an
-x86_64 interpreter running under Rosetta reports `torch.backends.mps.is_available()`
-as `False`, so the device appears missing rather than broken. Check with
-`python -c "import platform; print(platform.machine())"` -- it must print `arm64`.
 
 `BSRoformerSession.release()` permits a later reload, while `close()` is terminal.
 Loading and `cache_info()` use the same checkpoint resolver; its package-owned
