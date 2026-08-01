@@ -52,11 +52,11 @@ error across all six stems. It reads the same sha256-verified checkpoint and
 config as the Torch path — there is no second catalog and no separate
 converted-weight cache.
 
-**All 24 registry models are supported**, including four checkpoints that need
-one of three non-standard mask-estimator heads — `hyperace` (two checkpoints),
-`fno`, `large_inst`. Each head was verified against Torch on its real
-checkpoint: `hyperace` `6.3e-07`, `fno` `3.9e-07`, `large_inst` `5.4e-07`
-maximum absolute error.
+**All 34 registry models are supported**, including checkpoints that use the
+non-standard mask-estimator heads — `hyperace`, `hyperace_v1`, `fno`, and
+`large_inst` — or the non-standard trunks — `siamese` and `value_residual`.
+The MLX heads and trunks share the package registry and refuse unsupported
+variations before downloading a checkpoint.
 
 Speed varies by head — `fno` runs 3.7x faster than Torch on MPS and `hyperace`
 2.8x, while `large_inst` is currently about 2x *slower*. That one is a known
@@ -272,8 +272,9 @@ useful for broad stem discovery, but it is much larger than the default model an
 the upstream release notes warn that individual stems may be weaker than
 specialized models.
 
-HyperACE v2, FNO, and Large-Inst checkpoints use model variations: the RoFormer
-trunk is the same, but the mask estimator head is different. Registry-selected
+HyperACE v1/v2, FNO, and Large-Inst checkpoints use model variations: the
+RoFormer trunk is the same, but the mask estimator head is different. Siamese
+and Value Residual checkpoints use distinct trunk variations. Registry-selected
 models load these variations automatically. The FNO variation is a bundled
 minimal FNO1d inference implementation, so installing this package does not pull
 in the full `neuraloperator` research framework. The Large-Inst variation adds

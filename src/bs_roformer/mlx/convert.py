@@ -108,7 +108,7 @@ def _convert_head_key(key: str, weight: np.ndarray, variant: str | None):
         mlx_key = re.sub(r"(fno_skips_\d+)\.conv\.weight", r"\1.weight", mlx_key)
         return mlx_key, weight
 
-    if variant == "hyperace":
+    if variant in {"hyperace", "hyperace_v1"}:
         if key.endswith(".gamma"):
             # GatedFusion stores its scale as (1, C, 1, 1) to broadcast over
             # NCHW. MLX is NHWC, so it needs a plain (C,) to broadcast over the
@@ -213,6 +213,11 @@ def convert_torch_to_mlx_weights(
         mlx_key = re.sub(r"\.net\.(\d+)\.", r".net.layers.\1.", mlx_key)
         mlx_key = re.sub(r"\.to_out\.(\d+)\.", r".to_out.layers.\1.", mlx_key)
         mlx_key = re.sub(r"(to_freqs_\d+)\.(\d+)\.", r"\1.layers.\2.", mlx_key)
+
+        # Siamese transformer norms and learned coupling vectors are indexed
+        # sibling attributes in the MLX implementation.
+        for stem in ("ln_y_attn", "ln_x_attn", "ln_y_mlp", "ln_x_mlp", "y_attn"):
+            mlx_key = re.sub(rf"^{stem}\.(\d+)\.", rf"{stem}_\1.", mlx_key)
 
         mlx_weights[mlx_key] = mx.array(numpy_weight)
 

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### MLX variation coverage
+
+- Added MLX trunk support for the `siamese` and `value_residual` BS checkpoints,
+  plus the HyperACE v1 mask-estimator head. The backend now recognises every
+  variation declared by the 34-model registry and selects trunk versus head
+  variations explicitly.
+
 ### MLX model ownership
 
 - `src/bs_roformer/mlx/model.py`, previously vendored verbatim from

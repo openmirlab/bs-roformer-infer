@@ -87,7 +87,6 @@ def demix_track(config, model, mix, device, first_chunk_time=None):
 
     plan = ChunkingPlan.from_config(config)
     C = plan.chunk_size
-    N = plan.num_overlap
     step = plan.step
     fade_size = plan.fade_size
     border = plan.border

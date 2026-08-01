@@ -54,6 +54,11 @@ Bundle").
   used by pcunwa's `bs_large_v2_inst.ckpt`. The RoFormer trunk remains in
   `bs_roformer.py`; this module owns the four extra time/frequency Transformer
   pairs inserted before the mask MLP.
+- `src/bs_roformer/mlx/variants.py` -- MLX Siamese and Value Residual trunk
+  implementations, kept separate so their checkpoint parameter trees remain
+  strict-loadable.
+- `src/bs_roformer/mlx/heads/hyperace_v1.py` -- MLX HyperACE v1 head; v1 and v2
+  remain separate because their decoder state trees differ.
 - `backbone_variant = "value_residual"` enables the experimental learned
   value-residual trunk; standard models keep their original state layout.
 - `src/bs_roformer/model_registry.py` -- `BSModel` + `MODEL_REGISTRY`,
@@ -170,8 +175,8 @@ by outage rather than announcement:
    registry metadata marks the two pcunwa HyperACE v2 checkpoints with
    `variation = "hyperace"`, which the CLI and clean API inject into model
    construction. The pcunwa FNO instrumental checkpoint was then added with
-   `variation = "fno"` after strict-loading against the bundled minimal FNO1d
-   implementation and passing a short forward probe.
+  `variation = "fno"` after strict-loading against the bundled minimal FNO1d
+  implementation and passing a short forward probe.
 5. pcunwa's Large-Inst instrumental checkpoint uses the normal trunk but adds
    four alternating time/frequency Transformer pairs inside the MaskEstimator.
    Registry metadata marks it with `variation = "large_inst"`; strict-loading
@@ -180,6 +185,8 @@ by outage rather than announcement:
 6. The pcunwa inventory covers 16 BS checkpoints: Leap standard/Xe, Siamese,
    HyperACE v1/v2, FNO, Large-Inst, Resurrection, Revive, and Value Residual.
    The three new architecture-specific checkpoints strict-loaded on 2026-07-31.
+   The optional MLX backend now covers the same six declared variation names;
+   Siamese and Value Residual use trunk implementations rather than mask heads.
 
 `config/checkpoints.toml` is the single patch point for a future re-host; it
 does not require a code change. See README's "What This Project Will NEVER

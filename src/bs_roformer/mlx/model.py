@@ -26,6 +26,7 @@ see `CHANGELOG.md`):
 Reads: .attention (L2Norm, Transformer), .bands (BandSplit, BSRoformerBlock,
 DEFAULT_FREQS_PER_BANDS), .ops (env_enabled, pack, rearrange, unpack),
 .rfft_guard (exact_zero_safe_rfft), .heads (build_mask_estimator, lazily),
+.variants (SiameseTransformer, ValueResidualTransformer),
 mlx.core, mlx.nn, mlx_spectro
 """
 
@@ -79,6 +80,7 @@ class BSRoformerMLX(nn.Module):
         # NOT UPSTREAM: named explicitly so a variant checkpoint cannot be
         # swallowed by **kwargs and silently built as the stock head.
         mask_estimator_variant="mlp",
+        backbone_variant="standard",
         chunk_seconds: float = 8.0,
         overlap_seconds: float = 1.0,
         **kwargs  # Accept and ignore other PyTorch-specific params
@@ -90,6 +92,9 @@ class BSRoformerMLX(nn.Module):
         self.stereo = stereo
         self.audio_channels = 2 if stereo else 1
         self.mask_estimator_variant = mask_estimator_variant or "mlp"
+        self.backbone_variant = backbone_variant or "standard"
+        if self.backbone_variant not in {"standard", "value_residual", "siamese"}:
+            raise ValueError(f"unknown backbone_variant: {self.backbone_variant!r}")
         self.num_stems = num_stems
         self.mlp_expansion_factor = mlp_expansion_factor
 
@@ -160,8 +165,20 @@ class BSRoformerMLX(nn.Module):
                     linear_attn=False, **transformer_kwargs,
                 )
 
-            time_tran = Transformer(depth=time_transformer_depth, rotary_embed=rotary_embed, **transformer_kwargs)
-            freq_tran = Transformer(depth=freq_transformer_depth, rotary_embed=rotary_embed, **transformer_kwargs)
+            if self.backbone_variant == "siamese":
+                from .variants import SiameseTransformer
+
+                time_tran = SiameseTransformer(depth=time_transformer_depth, rotary_embed=rotary_embed, **transformer_kwargs)
+                freq_tran = SiameseTransformer(depth=freq_transformer_depth, rotary_embed=rotary_embed, **transformer_kwargs)
+            elif self.backbone_variant == "value_residual":
+                from .variants import ValueCaptureTransformer, ValueResidualTransformer
+
+                transformer_cls = ValueCaptureTransformer if i == 0 else ValueResidualTransformer
+                time_tran = transformer_cls(depth=time_transformer_depth, rotary_embed=rotary_embed, **transformer_kwargs)
+                freq_tran = transformer_cls(depth=freq_transformer_depth, rotary_embed=rotary_embed, **transformer_kwargs)
+            else:
+                time_tran = Transformer(depth=time_transformer_depth, rotary_embed=rotary_embed, **transformer_kwargs)
+                freq_tran = Transformer(depth=freq_transformer_depth, rotary_embed=rotary_embed, **transformer_kwargs)
 
             # Create and register block
             setattr(self, f'layers_{i}', BSRoformerBlock(linear_tran, time_tran, freq_tran))
@@ -310,6 +327,12 @@ class BSRoformerMLX(nn.Module):
                     self._amp_warned = True
                 use_amp = False
 
+        if self.backbone_variant == "siamese":
+            return self._forward_siamese(x, use_amp=use_amp)
+
+        time_v_residual = None
+        freq_v_residual = None
+
         # Apply transformer layers
         for i in range(self.depth):
             block = getattr(self, f'layers_{i}')
@@ -331,13 +354,23 @@ class BSRoformerMLX(nn.Module):
             # Time transformer
             x = rearrange(x, "b t f d -> b f t d")
             x, ps = pack([x], "* t d")
-            x = time_transformer(x)
+            if self.backbone_variant == "value_residual" and i > 0:
+                x, next_time_v_residual = time_transformer(x, value_residual=time_v_residual)
+                if time_v_residual is None:
+                    time_v_residual = next_time_v_residual
+            else:
+                x = time_transformer(x)
             x, = unpack(x, ps, "* t d")
 
             # Frequency transformer
             x = rearrange(x, "b f t d -> b t f d")
             x, ps = pack([x], "* f d")
-            x = freq_transformer(x)
+            if self.backbone_variant == "value_residual" and i > 0:
+                x, next_freq_v_residual = freq_transformer(x, value_residual=freq_v_residual)
+                if freq_v_residual is None:
+                    freq_v_residual = next_freq_v_residual
+            else:
+                x = freq_transformer(x)
             x, = unpack(x, ps, "* f d")
 
         if use_amp:
@@ -347,6 +380,31 @@ class BSRoformerMLX(nn.Module):
         x = self.final_norm(x)
 
         return x
+
+    def _forward_siamese(self, x, *, use_amp=False):
+        X = x
+        Y = x
+        layer_idx = 1
+        for i in range(self.depth):
+            block = getattr(self, f"layers_{i}")
+            X = rearrange(X, "b t f d -> b f t d")
+            Y = rearrange(Y, "b t f d -> b f t d")
+            X, ps = pack([X], "* t d")
+            Y, _ = pack([Y], "* t d")
+            X, Y = block.time_transformer(X, Y, layer_idx)
+            layer_idx += block.time_transformer.depth
+            X, = unpack(X, ps, "* t d")
+            Y, = unpack(Y, ps, "* t d")
+            X = rearrange(X, "b f t d -> b t f d")
+            Y = rearrange(Y, "b f t d -> b t f d")
+            X, ps = pack([X], "* f d")
+            Y, _ = pack([Y], "* f d")
+            X, Y = block.freq_transformer(X, Y, layer_idx)
+            layer_idx += block.freq_transformer.depth
+            X, = unpack(X, ps, "* f d")
+            Y, = unpack(Y, ps, "* f d")
+        x = X + self.final_norm(Y)
+        return x.astype(mx.float32) if use_amp else x
 
     def _estimate_masks(self, x):
         """

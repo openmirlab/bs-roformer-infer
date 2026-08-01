@@ -148,9 +148,12 @@ class MLXBackend:
             # The registry variation, not a config key: the Torch side injects it
             # the same way (utils.get_model_from_config), because the published
             # YAMLs do not carry it.
-            "mask_estimator_variant": model_cfg.get("mask_estimator_variant")
-            or variation
-            or "mlp",
+            "mask_estimator_variant": (
+                model_cfg.get("mask_estimator_variant")
+                or ("mlp" if variation in {"value_residual", "siamese"} else variation)
+                or "mlp"
+            ),
+            "backbone_variant": variation if variation in {"value_residual", "siamese"} else "standard",
             "dim": model_cfg["dim"],
             "depth": model_cfg["depth"],
             "stereo": model_cfg.get("stereo", False),

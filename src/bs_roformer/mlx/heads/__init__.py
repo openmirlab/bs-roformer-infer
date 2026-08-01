@@ -10,17 +10,23 @@ Heads are imported lazily: a checkpoint that never asks for HyperACE should not 
 for importing it, and a missing head must fail by name rather than at some later
 shape mismatch.
 
-Reads: ..bands (MaskEstimator), .large_inst, .fno, .hyperace (all lazily)
+Reads: ..bands (MaskEstimator), .large_inst, .fno, .hyperace, .hyperace_v1 (all lazily)
 """
 
 from __future__ import annotations
 
 #: Every variation the Torch side's `_create_mask_estimator` knows about. This is
 #: the target, not a capability claim -- ask `available_variants()` for that.
-VARIANTS = ("mlp", "hyperace", "fno", "large_inst")
+VARIANTS = ("mlp", "hyperace", "hyperace_v1", "fno", "large_inst", "siamese", "value_residual")
 
 #: Which variant lives in which module. "mlp" is built from the trunk itself.
-_MODULES = {"hyperace": "hyperace", "fno": "fno", "large_inst": "large_inst"}
+_MODULES = {
+    "hyperace": "hyperace",
+    "hyperace_v1": "hyperace_v1",
+    "fno": "fno",
+    "large_inst": "large_inst",
+}
+_TRUNK_VARIANTS = {"siamese", "value_residual"}
 
 
 def available_variants() -> tuple[str, ...]:
@@ -33,7 +39,7 @@ def available_variants() -> tuple[str, ...]:
     """
     from importlib.util import find_spec
 
-    found = ["mlp"]
+    found = ["mlp", "siamese", "value_residual"]
     for variant, module in _MODULES.items():
         if find_spec(f"{__name__}.{module}") is not None:
             found.append(variant)
@@ -56,7 +62,7 @@ def build_mask_estimator(
     arguments a head receives. `use_grouped` is an MLX-only fusion switch that
     applies to the stock head alone.
     """
-    variant = variant or "mlp"
+    variant = "mlp" if variant in _TRUNK_VARIANTS else (variant or "mlp")
 
     if variant == "mlp":
         from ..bands import MaskEstimator
@@ -72,6 +78,16 @@ def build_mask_estimator(
         from .hyperace import HyperACEMaskEstimator
 
         return HyperACEMaskEstimator(
+            dim=dim,
+            dim_inputs=dim_inputs,
+            depth=depth,
+            audio_channels=audio_channels,
+            mlp_expansion_factor=mlp_expansion_factor,
+        )
+    if variant == "hyperace_v1":
+        from .hyperace_v1 import HyperACEV1MaskEstimator
+
+        return HyperACEV1MaskEstimator(
             dim=dim,
             dim_inputs=dim_inputs,
             depth=depth,
