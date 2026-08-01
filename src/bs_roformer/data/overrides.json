@@ -23,7 +23,17 @@
     "bs_roformer_inst_hyperacev2.ckpt": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_inst/bs_roformer_inst_hyperacev2.ckpt",
     "bs_roformer_voc_hyperacev2.ckpt": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_voc/bs_roformer_voc_hyperacev2.ckpt",
     "bs_roformer_fno.ckpt": "https://huggingface.co/pcunwa/BS-Roformer-Inst-FNO/resolve/main/bs_roformer_fno.ckpt",
-    "bs_large_v2_inst.ckpt": "https://huggingface.co/pcunwa/BS-Roformer-Large-Inst/resolve/main/bs_large_v2_inst.ckpt"
+    "bs_large_v2_inst.ckpt": "https://huggingface.co/pcunwa/BS-Roformer-Large-Inst/resolve/main/bs_large_v2_inst.ckpt",
+    "bs_leap_xe_inst.ckpt": "https://huggingface.co/pcunwa/BS-Roformer-Leap/resolve/4e47d6662ae82eaa8b4ac4329fe66099a843b48e/Xe/bs_leap_xe_inst.ckpt",
+    "bs_leap_xe_voc.ckpt": "https://huggingface.co/pcunwa/BS-Roformer-Leap/resolve/4e47d6662ae82eaa8b4ac4329fe66099a843b48e/Xe/bs_leap_xe_voc.ckpt",
+    "bs_exp_siameseroformer.ckpt": "https://huggingface.co/pcunwa/BS-EXP-SiameseRoformer/resolve/2042531f6f98ff5070124fec89dffbdd185877f9/bs_exp_siameseroformer.ckpt",
+    "bs_hyperace.ckpt": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/5b1f8283125d5e4a3614d0e3635a636e09c84059/bs_hyperace.ckpt",
+    "BS_Inst_EXP_VRL.ckpt": "https://huggingface.co/pcunwa/BS-Roformer-Inst-EXP-Value-Residual/resolve/d477ee398f162f3ec410a2be29b38b0158556d98/BS_Inst_EXP_VRL.ckpt",
+    "BS-Roformer-Resurrection-Inst.ckpt": "https://huggingface.co/pcunwa/BS-Roformer-Resurrection/resolve/8fc1a62f765e3e738db8394d7e87e379acc4c675/BS-Roformer-Resurrection-Inst.ckpt",
+    "BS-Roformer-Resurrection.ckpt": "https://huggingface.co/pcunwa/BS-Roformer-Resurrection/resolve/8fc1a62f765e3e738db8394d7e87e379acc4c675/BS-Roformer-Resurrection.ckpt",
+    "bs_roformer_revive.ckpt": "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/3f912884cdf9cbe8549297ce465f86a38572236c/bs_roformer_revive.ckpt",
+    "bs_roformer_revive2.ckpt": "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/3f912884cdf9cbe8549297ce465f86a38572236c/bs_roformer_revive2.ckpt",
+    "bs_roformer_revive3e.ckpt": "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/3f912884cdf9cbe8549297ce465f86a38572236c/bs_roformer_revive3e.ckpt"
   },
   "configs": {
     "BS-Rofo-SW-Fixed.yaml": "https://huggingface.co/enerjazzer/BS-ROFO-SW-Fixed/resolve/main/BS-Rofo-SW-Fixed.yaml",
@@ -45,6 +55,16 @@
     "hyperace_v2_inst_config.yaml": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_inst/config.yaml",
     "hyperace_v2_voc_config.yaml": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/main/v2_voc/config.yaml",
     "bsrofo_fno.yaml": "https://huggingface.co/pcunwa/BS-Roformer-Inst-FNO/resolve/main/bsrofo_fno.yaml",
-    "bs_large_v2_inst_config.yaml": "https://huggingface.co/pcunwa/BS-Roformer-Large-Inst/resolve/main/config.yaml"
+    "bs_large_v2_inst_config.yaml": "https://huggingface.co/pcunwa/BS-Roformer-Large-Inst/resolve/main/config.yaml",
+    "leap_xe_config_inst.yaml": "https://huggingface.co/pcunwa/BS-Roformer-Leap/resolve/4e47d6662ae82eaa8b4ac4329fe66099a843b48e/Xe/leap_xe_config_inst.yaml",
+    "leap_xe_config_voc.yaml": "https://huggingface.co/pcunwa/BS-Roformer-Leap/resolve/4e47d6662ae82eaa8b4ac4329fe66099a843b48e/Xe/leap_xe_config_voc.yaml",
+    "siamese_config.yaml": "https://huggingface.co/pcunwa/BS-EXP-SiameseRoformer/resolve/2042531f6f98ff5070124fec89dffbdd185877f9/config.yaml",
+    "hyperace_v1_config.yaml": "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/5b1f8283125d5e4a3614d0e3635a636e09c84059/config.yaml",
+    "BS_Inst_EXP_VRL.yaml": "https://huggingface.co/pcunwa/BS-Roformer-Inst-EXP-Value-Residual/resolve/d477ee398f162f3ec410a2be29b38b0158556d98/BS_Inst_EXP_VRL.yaml",
+    "BS-Roformer-Resurrection-Inst-Config.yaml": "https://huggingface.co/pcunwa/BS-Roformer-Resurrection/resolve/8fc1a62f765e3e738db8394d7e87e379acc4c675/BS-Roformer-Resurrection-Inst-Config.yaml",
+    "BS-Roformer-Resurrection-Config.yaml": "https://huggingface.co/pcunwa/BS-Roformer-Resurrection/resolve/8fc1a62f765e3e738db8394d7e87e379acc4c675/BS-Roformer-Resurrection-Config.yaml",
+    "revive_config.yaml": "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/3f912884cdf9cbe8549297ce465f86a38572236c/config.yaml",
+    "revive_v2_config.yaml": "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/3f912884cdf9cbe8549297ce465f86a38572236c/config.yaml",
+    "revive_v3e_config.yaml": "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/3f912884cdf9cbe8549297ce465f86a38572236c/config.yaml"
   }
 }

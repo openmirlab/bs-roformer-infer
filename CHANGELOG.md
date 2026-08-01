@@ -107,6 +107,14 @@
 - Documented that MPS requires an **arm64 Python interpreter** -- under Rosetta
   it reports as unavailable rather than failing loudly, which reads as "broken"
   rather than "wrong interpreter".
+### pcunwa model coverage
+
+- Added direct registry coverage for all 16 BS checkpoints in the `pcunwa`
+  Hugging Face model family, including Leap Xe, Resurrection, Revive, Siamese,
+  HyperACE v1, and Value Residual variants. Added clean-room inference support
+  for the Siamese trunk, HyperACE v1 head, and learned value-residual trunk;
+  weights remain runtime downloads and their licenses remain `not-reviewed`
+  pending upstream clarification.
 
 - Added the MVSep Mega 53-stem BS-RoFormer checkpoint from
   `ZFTurbo/Music-Source-Separation-Training` release `v1.0.21`, with recorded

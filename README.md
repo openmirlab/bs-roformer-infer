@@ -168,7 +168,7 @@ Also available as a preprint: [arXiv:2309.02612](https://arxiv.org/abs/2309.0261
 ## Scope
 
 **In scope**: inference (forward pass) with the BS-RoFormer architecture; a
-24-model registry spanning multi-stem, 53-stem mega, four-stem, vocals, karaoke,
+34-entry registry spanning multi-stem, 53-stem mega, four-stem, vocals, karaoke,
 instrumental, and de-reverb
 checkpoints; automatic, manual, and configurable-directory checkpoint
 management with sha256 verification; a standalone download CLI.
@@ -243,6 +243,13 @@ print(DEFAULT_MODEL)  # "roformer-model-bs-roformer-sw-by-jarredou"
 | `roformer-model-bs-roformer-hyperace-v2-vocals-by-pcunwa` | vocals | HyperACE v2 vocals checkpoint; uses the HyperACE mask-estimator variation |
 | `roformer-model-bs-roformer-leap-vocals-by-pcunwa` | vocals | Leap vocals checkpoint by pcunwa |
 | `roformer-model-bs-roformer-leap-instrumental-by-pcunwa` | instrumental | Leap instrumental checkpoint by pcunwa |
+| `roformer-model-bs-roformer-leap-xe-vocals-by-pcunwa` | vocals | Leap Xe vocals checkpoint; standard BS trunk |
+| `roformer-model-bs-roformer-leap-xe-instrumental-by-pcunwa` | instrumental | Leap Xe instrumental checkpoint; standard BS trunk |
+| `roformer-model-bs-roformer-siamese-vocals-by-pcunwa` | vocals | Experimental two-stream Siamese RoFormer trunk |
+| `roformer-model-bs-roformer-hyperace-v1-instrumental-by-pcunwa` | instrumental | HyperACE v1 segmentation head |
+| `roformer-model-bs-roformer-value-residual-instrumental-by-pcunwa` | instrumental | Experimental learned value-residual trunk |
+| `pcunwa-bs-roformer-resurrection-instrumental` / `pcunwa-bs-roformer-resurrection-vocals` | instrumental / vocals | Direct pcunwa Resurrection checkpoints |
+| `pcunwa-bs-roformer-revive-v1` / `pcunwa-bs-roformer-revive-v2` / `pcunwa-bs-roformer-revive-v3e` | vocals | Direct pcunwa Revive checkpoint variants |
 | `roformer-model-bs-roformer-karaoke-by-anvuew` | karaoke | Karaoke vocals checkpoint by anvuew |
 | `roformer-model-bs-roformer-karaoke-by-becruily` | karaoke | Karaoke vocals checkpoint by becruily |
 | `roformer-model-bs-roformer-dereverb-by-anvuew-sdr-22-5050` | dereverb | anvuew de-reverberation checkpoint |

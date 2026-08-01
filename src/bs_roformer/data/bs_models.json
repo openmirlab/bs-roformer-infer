@@ -147,6 +147,69 @@
       "config": "bs_large_v2_inst_config.yaml",
       "category": "instrumental",
       "variation": "large_inst"
+    },
+    "roformer-model-bs-roformer-leap-xe-instrumental-by-pcunwa": {
+      "name": "Roformer Model: BS Roformer | Leap Xe Instrumental by pcunwa",
+      "checkpoint": "bs_leap_xe_inst.ckpt",
+      "config": "leap_xe_config_inst.yaml",
+      "category": "instrumental"
+    },
+    "roformer-model-bs-roformer-leap-xe-vocals-by-pcunwa": {
+      "name": "Roformer Model: BS Roformer | Leap Xe Vocals by pcunwa",
+      "checkpoint": "bs_leap_xe_voc.ckpt",
+      "config": "leap_xe_config_voc.yaml",
+      "category": "vocals"
+    },
+    "roformer-model-bs-roformer-siamese-vocals-by-pcunwa": {
+      "name": "Roformer Model: BS Roformer | Siamese Vocals by pcunwa",
+      "checkpoint": "bs_exp_siameseroformer.ckpt",
+      "config": "siamese_config.yaml",
+      "category": "vocals",
+      "variation": "siamese"
+    },
+    "roformer-model-bs-roformer-hyperace-v1-instrumental-by-pcunwa": {
+      "name": "Roformer Model: BS Roformer | HyperACE v1 Instrumental by pcunwa",
+      "checkpoint": "bs_hyperace.ckpt",
+      "config": "hyperace_v1_config.yaml",
+      "category": "instrumental",
+      "variation": "hyperace_v1"
+    },
+    "roformer-model-bs-roformer-value-residual-instrumental-by-pcunwa": {
+      "name": "Roformer Model: BS Roformer | Value Residual Instrumental by pcunwa",
+      "checkpoint": "BS_Inst_EXP_VRL.ckpt",
+      "config": "BS_Inst_EXP_VRL.yaml",
+      "category": "instrumental",
+      "variation": "value_residual"
+    },
+    "pcunwa-bs-roformer-resurrection-instrumental": {
+      "name": "Roformer Model: BS Roformer | Resurrection Instrumental by pcunwa",
+      "checkpoint": "BS-Roformer-Resurrection-Inst.ckpt",
+      "config": "BS-Roformer-Resurrection-Inst-Config.yaml",
+      "category": "instrumental"
+    },
+    "pcunwa-bs-roformer-resurrection-vocals": {
+      "name": "Roformer Model: BS Roformer | Resurrection Vocals by pcunwa",
+      "checkpoint": "BS-Roformer-Resurrection.ckpt",
+      "config": "BS-Roformer-Resurrection-Config.yaml",
+      "category": "vocals"
+    },
+    "pcunwa-bs-roformer-revive-v1": {
+      "name": "Roformer Model: BS Roformer | Revive by pcunwa",
+      "checkpoint": "bs_roformer_revive.ckpt",
+      "config": "revive_config.yaml",
+      "category": "vocals"
+    },
+    "pcunwa-bs-roformer-revive-v2": {
+      "name": "Roformer Model: BS Roformer | Revive V2 by pcunwa",
+      "checkpoint": "bs_roformer_revive2.ckpt",
+      "config": "revive_v2_config.yaml",
+      "category": "vocals"
+    },
+    "pcunwa-bs-roformer-revive-v3e": {
+      "name": "Roformer Model: BS Roformer | Revive V3e by pcunwa",
+      "checkpoint": "bs_roformer_revive3e.ckpt",
+      "config": "revive_v3e_config.yaml",
+      "category": "vocals"
     }
   }
 }

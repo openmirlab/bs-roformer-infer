@@ -39,7 +39,9 @@ def get_model_from_config(model_type, config, *, model_variation=None):
     if model_type == 'bs_roformer':
         from . import BSRoformer
         model_config = dict(config.model)
-        if model_variation is not None and "mask_estimator_variant" not in model_config:
+        if model_variation in {"value_residual", "siamese"}:
+            model_config.setdefault("backbone_variant", model_variation)
+        elif model_variation is not None and "mask_estimator_variant" not in model_config:
             model_config["mask_estimator_variant"] = model_variation
 
         # Convert list to tuple for parameters that require tuple type hints
@@ -58,7 +60,7 @@ def get_model_from_config(model_type, config, *, model_variation=None):
             'mask_estimator_depth', 'multi_stft_resolution_loss_weight',
             'multi_stft_resolutions_window_sizes', 'multi_stft_hop_size',
             'multi_stft_normalized', 'multi_stft_window_fn', 'mlp_expansion_factor',
-            'mask_estimator_variant',
+            'mask_estimator_variant', 'backbone_variant',
         }
         model_config = {k: v for k, v in model_config.items() if k in valid_params}
 

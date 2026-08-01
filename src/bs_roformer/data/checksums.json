@@ -177,6 +177,86 @@
     "bs_large_v2_inst_config.yaml": {
       "sha256": "85d10906007df21ee48dbb86faa09205609274eb38ea224dce767e2844d0a934",
       "size": 1973
+    },
+    "bs_leap_xe_inst.ckpt": {
+      "sha256": "33ee9415f491d257fa7a79f6e92a80d647bc71ed622bfef9a137b6e4250307d3",
+      "size": 267798769
+    },
+    "bs_leap_xe_voc.ckpt": {
+      "sha256": "b739c1d2d87a81cd3dd3844ed9ad0bd678708c7a0a761a03a1aaff9af79a096d",
+      "size": 267796851
+    },
+    "bs_exp_siameseroformer.ckpt": {
+      "sha256": "cf5456f703931bdc5415c167453b4d88630c3adb1f2d4de462423faa52b30b79",
+      "size": 204682749
+    },
+    "bs_hyperace.ckpt": {
+      "sha256": "907ac3c899a1ecdfcfa7491bb31936d26a4d472bdb5efb258237fdca666c0d6a",
+      "size": 274890855
+    },
+    "BS_Inst_EXP_VRL.ckpt": {
+      "sha256": "c035e2a102243405e45bf33faa175f62fd7118f63b62771fafdf81062b804131",
+      "size": 393351501
+    },
+    "BS-Roformer-Resurrection-Inst.ckpt": {
+      "sha256": "16311025a5133ae6411760ccfe9e3e66b31a01d9d8bec0a03fa7ec4bedac7a15",
+      "size": 204483033
+    },
+    "BS-Roformer-Resurrection.ckpt": {
+      "sha256": "9dbfe5cb572e4ed32a15ec727d7bd06c8d7aba97509e6fda5bc008bb1e0b2dd5",
+      "size": 204510749
+    },
+    "bs_roformer_revive.ckpt": {
+      "sha256": "f1d7e4bfdfef07c6b2bc1d65283a7d03c3c38f8c7dbc8d729b785f93c8b8699a",
+      "size": 639326600
+    },
+    "bs_roformer_revive2.ckpt": {
+      "sha256": "58098850c882a7472dad39f99fb8040ce6eaafe671cfe9881d89aea276bbb5f5",
+      "size": 639326600
+    },
+    "bs_roformer_revive3e.ckpt": {
+      "sha256": "1b0751b9a15c591407c3b77f08eb4ad3005e42e96051f3f2b39760f1130c467b",
+      "size": 639326600
+    },
+    "leap_xe_config_inst.yaml": {
+      "sha256": "bc188276085e07840757e5117285ead7ec5631f94329c1c6f5f0aff385adea4d",
+      "size": 2189
+    },
+    "leap_xe_config_voc.yaml": {
+      "sha256": "d3cb8c84be2e9bcbc64c1086e2256dc097ab5addebc5ce507818e90ff8cbdc25",
+      "size": 2190
+    },
+    "siamese_config.yaml": {
+      "sha256": "1d881ed6a68cae81717fe078b9a427cb206457e06eb3a4cbdf2ebbe659ac2f88",
+      "size": 1969
+    },
+    "hyperace_v1_config.yaml": {
+      "sha256": "85d10906007df21ee48dbb86faa09205609274eb38ea224dce767e2844d0a934",
+      "size": 1973
+    },
+    "BS_Inst_EXP_VRL.yaml": {
+      "sha256": "50bc02f2c0303919781961bd3a6a669da81ab5d39b6c6e5b66a917ab6dc40fec",
+      "size": 1927
+    },
+    "BS-Roformer-Resurrection-Inst-Config.yaml": {
+      "sha256": "0c67e988e1d608a4d3414f602dd3593ec927913c60618d1ff981baec40455cb0",
+      "size": 2632
+    },
+    "BS-Roformer-Resurrection-Config.yaml": {
+      "sha256": "79c65b6158c8e9236c9f02247cbb2fb6eb0007c42c47799e9de8e86f474556c6",
+      "size": 2633
+    },
+    "revive_config.yaml": {
+      "sha256": "6b9d5fb6aeda6b0941f937e4e4883643e3187331ff403fb820c7aa6af4b02dbb",
+      "size": 2382
+    },
+    "revive_v2_config.yaml": {
+      "sha256": "6b9d5fb6aeda6b0941f937e4e4883643e3187331ff403fb820c7aa6af4b02dbb",
+      "size": 2382
+    },
+    "revive_v3e_config.yaml": {
+      "sha256": "6b9d5fb6aeda6b0941f937e4e4883643e3187331ff403fb820c7aa6af4b02dbb",
+      "size": 2382
     }
   }
 }

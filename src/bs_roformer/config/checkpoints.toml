@@ -265,6 +265,229 @@ url = "https://huggingface.co/anvuew/karaoke_bs_roformer/resolve/main/karaoke_bs
 sha256 = "5cb3f127ecbc6a8e37f31ea7e05f60f360a44da43e857bde805b7b68558f6338"
 size = 1973
 
+[models.roformer-model-bs-roformer-leap-xe-instrumental-by-pcunwa]
+name = "Roformer Model: BS Roformer | Leap Xe Instrumental by pcunwa"
+category = "instrumental"
+license = "not-reviewed"
+provenance = "pcunwa/BS-Roformer-Leap Hugging Face repository"
+source_revision = "4e47d6662ae82eaa8b4ac4329fe66099a843b48e"
+updated_at = "2026-07-31"
+
+[[models.roformer-model-bs-roformer-leap-xe-instrumental-by-pcunwa.artifacts]]
+kind = "checkpoint"
+name = "bs_leap_xe_inst.ckpt"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Leap/resolve/4e47d6662ae82eaa8b4ac4329fe66099a843b48e/Xe/bs_leap_xe_inst.ckpt"
+sha256 = "33ee9415f491d257fa7a79f6e92a80d647bc71ed622bfef9a137b6e4250307d3"
+size = 267798769
+
+[[models.roformer-model-bs-roformer-leap-xe-instrumental-by-pcunwa.artifacts]]
+kind = "config"
+name = "leap_xe_config_inst.yaml"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Leap/resolve/4e47d6662ae82eaa8b4ac4329fe66099a843b48e/Xe/leap_xe_config_inst.yaml"
+sha256 = "bc188276085e07840757e5117285ead7ec5631f94329c1c6f5f0aff385adea4d"
+size = 2189
+
+[models.roformer-model-bs-roformer-leap-xe-vocals-by-pcunwa]
+name = "Roformer Model: BS Roformer | Leap Xe Vocals by pcunwa"
+category = "vocals"
+license = "not-reviewed"
+provenance = "pcunwa/BS-Roformer-Leap Hugging Face repository"
+source_revision = "4e47d6662ae82eaa8b4ac4329fe66099a843b48e"
+updated_at = "2026-07-31"
+
+[[models.roformer-model-bs-roformer-leap-xe-vocals-by-pcunwa.artifacts]]
+kind = "checkpoint"
+name = "bs_leap_xe_voc.ckpt"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Leap/resolve/4e47d6662ae82eaa8b4ac4329fe66099a843b48e/Xe/bs_leap_xe_voc.ckpt"
+sha256 = "b739c1d2d87a81cd3dd3844ed9ad0bd678708c7a0a761a03a1aaff9af79a096d"
+size = 267796851
+
+[[models.roformer-model-bs-roformer-leap-xe-vocals-by-pcunwa.artifacts]]
+kind = "config"
+name = "leap_xe_config_voc.yaml"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Leap/resolve/4e47d6662ae82eaa8b4ac4329fe66099a843b48e/Xe/leap_xe_config_voc.yaml"
+sha256 = "d3cb8c84be2e9bcbc64c1086e2256dc097ab5addebc5ce507818e90ff8cbdc25"
+size = 2190
+
+[models.roformer-model-bs-roformer-siamese-vocals-by-pcunwa]
+name = "Roformer Model: BS Roformer | Siamese Vocals by pcunwa"
+category = "vocals"
+variation = "siamese"
+license = "not-reviewed"
+provenance = "pcunwa/BS-EXP-SiameseRoformer Hugging Face repository"
+source_revision = "2042531f6f98ff5070124fec89dffbdd185877f9"
+updated_at = "2026-07-31"
+
+[[models.roformer-model-bs-roformer-siamese-vocals-by-pcunwa.artifacts]]
+kind = "checkpoint"
+name = "bs_exp_siameseroformer.ckpt"
+url = "https://huggingface.co/pcunwa/BS-EXP-SiameseRoformer/resolve/2042531f6f98ff5070124fec89dffbdd185877f9/bs_exp_siameseroformer.ckpt"
+sha256 = "cf5456f703931bdc5415c167453b4d88630c3adb1f2d4de462423faa52b30b79"
+size = 204682749
+
+[[models.roformer-model-bs-roformer-siamese-vocals-by-pcunwa.artifacts]]
+kind = "config"
+name = "siamese_config.yaml"
+url = "https://huggingface.co/pcunwa/BS-EXP-SiameseRoformer/resolve/2042531f6f98ff5070124fec89dffbdd185877f9/config.yaml"
+sha256 = "1d881ed6a68cae81717fe078b9a427cb206457e06eb3a4cbdf2ebbe659ac2f88"
+size = 1969
+
+[models.roformer-model-bs-roformer-hyperace-v1-instrumental-by-pcunwa]
+name = "Roformer Model: BS Roformer | HyperACE v1 Instrumental by pcunwa"
+category = "instrumental"
+variation = "hyperace_v1"
+license = "not-reviewed"
+provenance = "pcunwa/BS-Roformer-HyperACE Hugging Face repository"
+source_revision = "5b1f8283125d5e4a3614d0e3635a636e09c84059"
+updated_at = "2026-07-31"
+
+[[models.roformer-model-bs-roformer-hyperace-v1-instrumental-by-pcunwa.artifacts]]
+kind = "checkpoint"
+name = "bs_hyperace.ckpt"
+url = "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/5b1f8283125d5e4a3614d0e3635a636e09c84059/bs_hyperace.ckpt"
+sha256 = "907ac3c899a1ecdfcfa7491bb31936d26a4d472bdb5efb258237fdca666c0d6a"
+size = 274890855
+
+[[models.roformer-model-bs-roformer-hyperace-v1-instrumental-by-pcunwa.artifacts]]
+kind = "config"
+name = "hyperace_v1_config.yaml"
+url = "https://huggingface.co/pcunwa/BS-Roformer-HyperACE/resolve/5b1f8283125d5e4a3614d0e3635a636e09c84059/config.yaml"
+sha256 = "85d10906007df21ee48dbb86faa09205609274eb38ea224dce767e2844d0a934"
+size = 1973
+
+[models.roformer-model-bs-roformer-value-residual-instrumental-by-pcunwa]
+name = "Roformer Model: BS Roformer | Value Residual Instrumental by pcunwa"
+category = "instrumental"
+variation = "value_residual"
+license = "not-reviewed"
+provenance = "pcunwa/BS-Roformer-Inst-EXP-Value-Residual Hugging Face repository"
+source_revision = "d477ee398f162f3ec410a2be29b38b0158556d98"
+updated_at = "2026-07-31"
+
+[[models.roformer-model-bs-roformer-value-residual-instrumental-by-pcunwa.artifacts]]
+kind = "checkpoint"
+name = "BS_Inst_EXP_VRL.ckpt"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Inst-EXP-Value-Residual/resolve/d477ee398f162f3ec410a2be29b38b0158556d98/BS_Inst_EXP_VRL.ckpt"
+sha256 = "c035e2a102243405e45bf33faa175f62fd7118f63b62771fafdf81062b804131"
+size = 393351501
+
+[[models.roformer-model-bs-roformer-value-residual-instrumental-by-pcunwa.artifacts]]
+kind = "config"
+name = "BS_Inst_EXP_VRL.yaml"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Inst-EXP-Value-Residual/resolve/d477ee398f162f3ec410a2be29b38b0158556d98/BS_Inst_EXP_VRL.yaml"
+sha256 = "50bc02f2c0303919781961bd3a6a669da81ab5d39b6c6e5b66a917ab6dc40fec"
+size = 1927
+
+[models.pcunwa-bs-roformer-resurrection-instrumental]
+name = "Roformer Model: BS Roformer | Resurrection Instrumental by pcunwa"
+category = "instrumental"
+license = "not-reviewed"
+provenance = "pcunwa/BS-Roformer-Resurrection Hugging Face repository"
+source_revision = "8fc1a62f765e3e738db8394d7e87e379acc4c675"
+updated_at = "2026-07-31"
+
+[[models.pcunwa-bs-roformer-resurrection-instrumental.artifacts]]
+kind = "checkpoint"
+name = "BS-Roformer-Resurrection-Inst.ckpt"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Resurrection/resolve/8fc1a62f765e3e738db8394d7e87e379acc4c675/BS-Roformer-Resurrection-Inst.ckpt"
+sha256 = "16311025a5133ae6411760ccfe9e3e66b31a01d9d8bec0a03fa7ec4bedac7a15"
+size = 204483033
+
+[[models.pcunwa-bs-roformer-resurrection-instrumental.artifacts]]
+kind = "config"
+name = "BS-Roformer-Resurrection-Inst-Config.yaml"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Resurrection/resolve/8fc1a62f765e3e738db8394d7e87e379acc4c675/BS-Roformer-Resurrection-Inst-Config.yaml"
+sha256 = "0c67e988e1d608a4d3414f602dd3593ec927913c60618d1ff981baec40455cb0"
+size = 2632
+
+[models.pcunwa-bs-roformer-resurrection-vocals]
+name = "Roformer Model: BS Roformer | Resurrection Vocals by pcunwa"
+category = "vocals"
+license = "not-reviewed"
+provenance = "pcunwa/BS-Roformer-Resurrection Hugging Face repository"
+source_revision = "8fc1a62f765e3e738db8394d7e87e379acc4c675"
+updated_at = "2026-07-31"
+
+[[models.pcunwa-bs-roformer-resurrection-vocals.artifacts]]
+kind = "checkpoint"
+name = "BS-Roformer-Resurrection.ckpt"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Resurrection/resolve/8fc1a62f765e3e738db8394d7e87e379acc4c675/BS-Roformer-Resurrection.ckpt"
+sha256 = "9dbfe5cb572e4ed32a15ec727d7bd06c8d7aba97509e6fda5bc008bb1e0b2dd5"
+size = 204510749
+
+[[models.pcunwa-bs-roformer-resurrection-vocals.artifacts]]
+kind = "config"
+name = "BS-Roformer-Resurrection-Config.yaml"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Resurrection/resolve/8fc1a62f765e3e738db8394d7e87e379acc4c675/BS-Roformer-Resurrection-Config.yaml"
+sha256 = "79c65b6158c8e9236c9f02247cbb2fb6eb0007c42c47799e9de8e86f474556c6"
+size = 2633
+
+[models.pcunwa-bs-roformer-revive-v1]
+name = "Roformer Model: BS Roformer | Revive by pcunwa"
+category = "vocals"
+license = "not-reviewed"
+provenance = "pcunwa/BS-Roformer-Revive Hugging Face repository"
+source_revision = "3f912884cdf9cbe8549297ce465f86a38572236c"
+updated_at = "2026-07-31"
+
+[[models.pcunwa-bs-roformer-revive-v1.artifacts]]
+kind = "checkpoint"
+name = "bs_roformer_revive.ckpt"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/3f912884cdf9cbe8549297ce465f86a38572236c/bs_roformer_revive.ckpt"
+sha256 = "f1d7e4bfdfef07c6b2bc1d65283a7d03c3c38f8c7dbc8d729b785f93c8b8699a"
+size = 639326600
+
+[[models.pcunwa-bs-roformer-revive-v1.artifacts]]
+kind = "config"
+name = "revive_config.yaml"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/3f912884cdf9cbe8549297ce465f86a38572236c/config.yaml"
+sha256 = "6b9d5fb6aeda6b0941f937e4e4883643e3187331ff403fb820c7aa6af4b02dbb"
+size = 2382
+
+[models.pcunwa-bs-roformer-revive-v2]
+name = "Roformer Model: BS Roformer | Revive V2 by pcunwa"
+category = "vocals"
+license = "not-reviewed"
+provenance = "pcunwa/BS-Roformer-Revive Hugging Face repository"
+source_revision = "3f912884cdf9cbe8549297ce465f86a38572236c"
+updated_at = "2026-07-31"
+
+[[models.pcunwa-bs-roformer-revive-v2.artifacts]]
+kind = "checkpoint"
+name = "bs_roformer_revive2.ckpt"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/3f912884cdf9cbe8549297ce465f86a38572236c/bs_roformer_revive2.ckpt"
+sha256 = "58098850c882a7472dad39f99fb8040ce6eaafe671cfe9881d89aea276bbb5f5"
+size = 639326600
+
+[[models.pcunwa-bs-roformer-revive-v2.artifacts]]
+kind = "config"
+name = "revive_v2_config.yaml"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/3f912884cdf9cbe8549297ce465f86a38572236c/config.yaml"
+sha256 = "6b9d5fb6aeda6b0941f937e4e4883643e3187331ff403fb820c7aa6af4b02dbb"
+size = 2382
+
+[models.pcunwa-bs-roformer-revive-v3e]
+name = "Roformer Model: BS Roformer | Revive V3e by pcunwa"
+category = "vocals"
+license = "not-reviewed"
+provenance = "pcunwa/BS-Roformer-Revive Hugging Face repository"
+source_revision = "3f912884cdf9cbe8549297ce465f86a38572236c"
+updated_at = "2026-07-31"
+
+[[models.pcunwa-bs-roformer-revive-v3e.artifacts]]
+kind = "checkpoint"
+name = "bs_roformer_revive3e.ckpt"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/3f912884cdf9cbe8549297ce465f86a38572236c/bs_roformer_revive3e.ckpt"
+sha256 = "1b0751b9a15c591407c3b77f08eb4ad3005e42e96051f3f2b39760f1130c467b"
+size = 639326600
+
+[[models.pcunwa-bs-roformer-revive-v3e.artifacts]]
+kind = "config"
+name = "revive_v3e_config.yaml"
+url = "https://huggingface.co/pcunwa/BS-Roformer-Revive/resolve/3f912884cdf9cbe8549297ce465f86a38572236c/config.yaml"
+sha256 = "6b9d5fb6aeda6b0941f937e4e4883643e3187331ff403fb820c7aa6af4b02dbb"
+size = 2382
+
 [models.roformer-model-bs-roformer-karaoke-by-becruily]
 name = "Roformer Model: BS Roformer | Karaoke by becruily"
 category = "karaoke"

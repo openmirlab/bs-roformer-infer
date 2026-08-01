@@ -20,7 +20,7 @@ Given an input folder of WAV files, it produces separated stems (vocals,
 drums, bass, guitar, piano, other) plus an `*_instrumental.wav` per track.
 See README.md for the public API, CLI, and full model registry.
 
-**In scope**: inference (forward pass) only; a 24-model registry
+**In scope**: inference (forward pass) only; a 34-entry registry
 (`src/bs_roformer/config/checkpoints.toml`) spanning multi-stem, 53-stem mega,
 four-stem, vocals, karaoke, instrumental, and de-reverb checkpoints; sha256-verified auto-download with a
 configurable-dir UX contract (explicit arg > `$BS_ROFORMER_MODELS_PATH` >
@@ -42,6 +42,10 @@ Bundle").
 - `src/bs_roformer/hyperace.py` -- the HyperACE mask-estimator variation used by
   pcunwa HyperACE v2 checkpoints. The RoFormer trunk remains in `bs_roformer.py`;
   this module owns only the segmentation head and its helper blocks.
+- `src/bs_roformer/hyperace_v1.py` -- the separate HyperACE v1 segmentation head;
+  v1 and v2 remain separate because their decoder state trees differ.
+- `src/bs_roformer/siamese.py` -- the clean-room two-stream transformer trunk used
+  by the pcunwa Siamese checkpoint.
 - `src/bs_roformer/fno.py` -- the FNO mask-estimator variation used by
   pcunwa's instrumental FNO checkpoint. It reimplements the minimal FNO1d
   inference surface needed by the checkpoint instead of depending on the full
@@ -50,6 +54,8 @@ Bundle").
   used by pcunwa's `bs_large_v2_inst.ckpt`. The RoFormer trunk remains in
   `bs_roformer.py`; this module owns the four extra time/frequency Transformer
   pairs inserted before the mask MLP.
+- `backbone_variant = "value_residual"` enables the experimental learned
+  value-residual trunk; standard models keep their original state layout.
 - `src/bs_roformer/model_registry.py` -- `BSModel` + `MODEL_REGISTRY`,
   backed by `config/checkpoints.toml` so new models don't need a code change.
   `MODEL_REGISTRY.get()` accepts slug, friendly name, or checkpoint filename.
@@ -134,7 +140,7 @@ Bundle").
 
 ## Weights hosting (org constitution article 4)
 
-All 24 registry models download from third-party hosts at runtime; none are
+All 34 registry models download from third-party hosts at runtime; none are
 committed to this repo. Provenance has moved twice already, both discovered
 by outage rather than announcement:
 
@@ -171,6 +177,9 @@ by outage rather than announcement:
    Registry metadata marks it with `variation = "large_inst"`; strict-loading
    `bs_large_v2_inst.ckpt` reports zero missing and zero unexpected keys, and a
    short forward probe returns finite output.
+6. The pcunwa inventory covers 16 BS checkpoints: Leap standard/Xe, Siamese,
+   HyperACE v1/v2, FNO, Large-Inst, Resurrection, Revive, and Value Residual.
+   The three new architecture-specific checkpoints strict-loaded on 2026-07-31.
 
 `config/checkpoints.toml` is the single patch point for a future re-host; it
 does not require a code change. See README's "What This Project Will NEVER
@@ -215,6 +224,10 @@ Development below). Test files:
   access. Run explicitly before a release: `pytest -m network
   tests/test_weights_liveness.py -v`, or `python
   tools/check_weights_liveness.py` directly.
+- `tests/test_pcunwa_coverage.py` -- locks the 16-checkpoint pcunwa inventory
+  and its architecture variation metadata.
+- `tools/probe_pcunwa_models.py` -- downloads, strict-loads, and optionally runs
+  a short forward pass for the pcunwa inventory.
 
 CI (`.github/workflows/test.yml`) matrixes Python 3.10-3.13, all
 `not network`-marked; run `uv run pytest -q` to get current pass/deselect

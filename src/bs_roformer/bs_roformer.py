@@ -10,11 +10,13 @@ without them, and enabling either would silently break state_dict compatibility.
 Upstream configs may still vary the MaskEstimator MLP width through
 ``mlp_expansion_factor``; this parameter is passed through for checkpoint parity.
 HyperACE, FNO, and Large-Inst checkpoints keep the same trunk but add different
-mask heads, selected explicitly through ``mask_estimator_variant``.
+mask heads, selected explicitly through ``mask_estimator_variant``. Experimental
+Value-Residual and Siamese checkpoints select a separate trunk through
+``backbone_variant`` while retaining the same STFT and mask-estimator boundary.
 
 Reads: .attend.Attend, .fno.FNOMaskEstimator, .hyperace.HyperACEMaskEstimator,
-.large_inst.LargeInstMaskEstimator, rotary_embedding_torch.RotaryEmbedding,
-beartype, einops, torch
+.hyperace_v1.HyperACEV1MaskEstimator, .large_inst.LargeInstMaskEstimator,
+rotary_embedding_torch.RotaryEmbedding, beartype, einops, torch
 """
 
 from __future__ import annotations
@@ -308,6 +310,16 @@ def _create_mask_estimator(
             audio_channels = audio_channels,
             mlp_expansion_factor = mlp_expansion_factor,
         )
+    if variant == "hyperace_v1":
+        from .hyperace_v1 import HyperACEV1MaskEstimator
+
+        return HyperACEV1MaskEstimator(
+            dim=dim,
+            dim_inputs=dim_inputs,
+            depth=depth,
+            audio_channels=audio_channels,
+            mlp_expansion_factor=mlp_expansion_factor,
+        )
     if variant == "fno":
         from .fno import FNOMaskEstimator
 
@@ -377,6 +389,7 @@ class BSRoformer(Module):
         multi_stft_window_fn: Callable = torch.hann_window,
         mlp_expansion_factor = 4,
         mask_estimator_variant = "mlp",
+        backbone_variant = "standard",
     ):
         super().__init__()
 
@@ -384,6 +397,9 @@ class BSRoformer(Module):
         self.audio_channels = 2 if stereo else 1
         self.num_stems = num_stems
         self.mask_estimator_variant = mask_estimator_variant
+        self.backbone_variant = backbone_variant
+        if backbone_variant not in {"standard", "value_residual", "siamese"}:
+            raise ValueError(f"unknown backbone_variant: {backbone_variant!r}")
 
         # Note: hyper_connections expand/reduce streams are NOT used because
         # existing checkpoints were trained without them.
@@ -407,13 +423,42 @@ class BSRoformer(Module):
         freq_rotary_embed = RotaryEmbedding(dim = dim_head)
 
         for layer_index in range(depth):
-            # Note: add_value_residual is disabled because existing checkpoints
-            # were trained without the learned_value_residual_mix feature.
-            # Original code had: add_value_residual = not is_first
-            self.layers.append(nn.ModuleList([
-                Transformer(depth = time_transformer_depth, rotary_embed = time_rotary_embed, add_value_residual = False, **transformer_kwargs),
-                Transformer(depth = freq_transformer_depth, rotary_embed = freq_rotary_embed, add_value_residual = False, **transformer_kwargs)
-            ]))
+            is_first = layer_index == 0
+            if backbone_variant == "siamese":
+                from .siamese import SiameseTransformer
+
+                siamese_kwargs = {
+                    key: value
+                    for key, value in transformer_kwargs.items()
+                    if key not in {"num_residual_streams", "num_residual_fracs"}
+                }
+                self.layers.append(nn.ModuleList([
+                    SiameseTransformer(
+                        depth=time_transformer_depth,
+                        rotary_embed=time_rotary_embed,
+                        **siamese_kwargs,
+                    ),
+                    SiameseTransformer(
+                        depth=freq_transformer_depth,
+                        rotary_embed=freq_rotary_embed,
+                        **siamese_kwargs,
+                    ),
+                ]))
+            else:
+                self.layers.append(nn.ModuleList([
+                    Transformer(
+                        depth=time_transformer_depth,
+                        rotary_embed=time_rotary_embed,
+                        add_value_residual=backbone_variant == "value_residual" and not is_first,
+                        **transformer_kwargs,
+                    ),
+                    Transformer(
+                        depth=freq_transformer_depth,
+                        rotary_embed=freq_rotary_embed,
+                        add_value_residual=backbone_variant == "value_residual" and not is_first,
+                        **transformer_kwargs,
+                    ),
+                ]))
 
         self.final_norm = RMSNorm(dim)
 
@@ -533,33 +578,48 @@ class BSRoformer(Module):
 
         x = self.band_split(x)
 
-        # value residuals
+        if self.backbone_variant == "siamese":
+            X = x
+            Y = x.clone()
+            current_layer_idx = 1
+            for time_transformer, freq_transformer in self.layers:
+                X = rearrange(X, "b t f d -> b f t d")
+                Y = rearrange(Y, "b t f d -> b f t d")
+                X, ps = pack([X], "* t d")
+                Y, _ = pack([Y], "* t d")
+                X, Y = time_transformer(X, Y, current_layer_idx)
+                current_layer_idx += len(time_transformer.layers)
+                X, = unpack(X, ps, "* t d")
+                Y, = unpack(Y, ps, "* t d")
+                X = rearrange(X, "b f t d -> b t f d")
+                Y = rearrange(Y, "b f t d -> b t f d")
 
-        time_v_residual = None
-        freq_v_residual = None
-
-        # axial / hierarchical attention
-
-        for time_transformer, freq_transformer in self.layers:
-
-            x = rearrange(x, 'b t f d -> b f t d')
-            x, ps = pack([x], '* t d')
-
-            x, next_time_v_residual = time_transformer(x, value_residual = time_v_residual)
-
-            time_v_residual = default(time_v_residual, next_time_v_residual)
-
-            x, = unpack(x, ps, '* t d')
-            x = rearrange(x, 'b f t d -> b t f d')
-            x, ps = pack([x], '* f d')
-
-            x, next_freq_v_residual = freq_transformer(x, value_residual = freq_v_residual)
-
-            freq_v_residual = default(freq_v_residual, next_freq_v_residual)
-
-            x, = unpack(x, ps, '* f d')
-
-        x = self.final_norm(x)
+                X, ps = pack([X], "* f d")
+                Y, _ = pack([Y], "* f d")
+                X, Y = freq_transformer(X, Y, current_layer_idx)
+                current_layer_idx += len(freq_transformer.layers)
+                X, = unpack(X, ps, "* f d")
+                Y, = unpack(Y, ps, "* f d")
+            x = X + self.final_norm(Y)
+        else:
+            time_v_residual = None
+            freq_v_residual = None
+            for time_transformer, freq_transformer in self.layers:
+                x = rearrange(x, 'b t f d -> b f t d')
+                x, ps = pack([x], '* t d')
+                x, next_time_v_residual = time_transformer(
+                    x, value_residual=time_v_residual
+                )
+                time_v_residual = default(time_v_residual, next_time_v_residual)
+                x, = unpack(x, ps, '* t d')
+                x = rearrange(x, 'b f t d -> b t f d')
+                x, ps = pack([x], '* f d')
+                x, next_freq_v_residual = freq_transformer(
+                    x, value_residual=freq_v_residual
+                )
+                freq_v_residual = default(freq_v_residual, next_freq_v_residual)
+                x, = unpack(x, ps, '* f d')
+            x = self.final_norm(x)
 
         num_stems = len(self.mask_estimators)
 

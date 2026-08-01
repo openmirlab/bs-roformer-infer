@@ -222,6 +222,52 @@ class TestModelInstantiation:
         assert len(model.mask_estimators[0].layers) == 4
         assert hasattr(model.mask_estimators[0], "norm")
 
+    @pytest.mark.parametrize(
+        ("variation", "backbone", "mask_head"),
+        [
+            ("value_residual", "value_residual", "mlp"),
+            ("siamese", "siamese", "mlp"),
+            ("hyperace_v1", "standard", "hyperace_v1"),
+        ],
+    )
+    def test_pcunwa_architecture_variations_dispatch(self, variation, backbone, mask_head):
+        """The experimental pcunwa variations reach the intended local modules."""
+        config = ConfigDict(
+            {
+                "model": {
+                    "dim": 8,
+                    "depth": 2,
+                    "stereo": True,
+                    "num_stems": 1,
+                    "time_transformer_depth": 1,
+                    "freq_transformer_depth": 1,
+                    "freqs_per_bands": [512, 513],
+                    "dim_head": 4,
+                    "heads": 1,
+                    "dim_freqs_in": 1025,
+                    "stft_n_fft": 2048,
+                    "stft_hop_length": 512,
+                    "stft_win_length": 2048,
+                    "mask_estimator_depth": 2,
+                    "mlp_expansion_factor": 2,
+                },
+                "training": {"target_instrument": "vocals", "instruments": ["vocals"]},
+            }
+        )
+
+        model = get_model_from_config(
+            "bs_roformer", config, model_variation=variation
+        )
+
+        assert model.backbone_variant == backbone
+        assert model.mask_estimator_variant == mask_head
+        if variation == "siamese":
+            assert hasattr(model.layers[0][0], "ln_y_attn")
+        elif variation == "value_residual":
+            assert model.layers[1][0].layers[0][0].to_value_residual_mix is not None
+        else:
+            assert hasattr(model.mask_estimators[0], "segm")
+
     def test_checkpoint_loader_strips_extra_metadata(self, tmp_path, monkeypatch):
         """FNO checkpoint metadata is loader compatibility data, not a model key."""
         checkpoint = tmp_path / "model.ckpt"
