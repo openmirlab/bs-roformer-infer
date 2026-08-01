@@ -12,7 +12,10 @@ params back to tuples afterward. Falls back to CPU with a warning when CUDA is
 unavailable rather than raising, since inference (unlike training) is still usable,
 just slow. `run_folder()` returns an immutable manifest of the files it actually
 writes, derived from the loaded config and successful writes rather than guessed
-registry metadata.
+registry metadata. `output_format` controls the written subtype/suffix
+(`_OUTPUT_FORMAT_WRITERS` is the single source of truth) -- defaults to
+`"wav_float32"` everywhere in this package so existing callers keep today's
+behavior unless they opt in.
 
 Reads: .utils (demix_track, get_model_from_config), .download (ensure_model_assets),
 .model_registry (DEFAULT_MODEL), yaml, ml_collections, torch
@@ -51,6 +54,28 @@ def _tuple_constructor(loader, node):
 
 
 SafeLoaderWithTuple.add_constructor('tag:yaml.org,2002:python/tuple', _tuple_constructor)
+
+DEFAULT_OUTPUT_FORMAT = "wav_float32"
+
+# Single source of truth mapping a resolved `output_format` value to the file suffix
+# and soundfile `subtype` that produce it. FLAC has no float subtype (soundfile/
+# libsndfile only support PCM_S8/16/24 for FLAC), so "flac16" is PCM_16 by design,
+# not a limitation to work around.
+_OUTPUT_FORMAT_WRITERS: dict[str, tuple[str, str]] = {
+    "wav_float32": (".wav", "FLOAT"),
+    "wav_s16": (".wav", "PCM_16"),
+    "flac16": (".flac", "PCM_16"),
+}
+
+
+def _resolve_output_writer(output_format: str) -> tuple[str, str]:
+    try:
+        return _OUTPUT_FORMAT_WRITERS[output_format]
+    except KeyError:
+        raise ValueError(
+            f"unsupported output_format: {output_format!r} "
+            f"(expected one of {sorted(_OUTPUT_FORMAT_WRITERS)})"
+        ) from None
 
 
 def _ensure_wav_inputs(input_folder: Path) -> list[Path]:
@@ -117,9 +142,12 @@ def _append_output(
     )
 
 
-def run_folder(model, args, config, device, verbose: bool = False) -> OutputManifest:
+def run_folder(
+    model, args, config, device, verbose: bool = False, output_format: str = DEFAULT_OUTPUT_FORMAT
+) -> OutputManifest:
     start_time = time.time()
     model.eval()
+    suffix, subtype = _resolve_output_writer(output_format)
 
     input_folder = Path(args.input_folder).expanduser()
     store_dir = _resolve_output_dir(Path(args.store_dir).expanduser())
@@ -161,8 +189,8 @@ def run_folder(model, args, config, device, verbose: bool = False) -> OutputMani
             if original_mono:
                 output_audio = output_audio[:, 0]
 
-            output_path = store_dir / f"{path.stem}_{output_id}.wav"
-            sf.write(output_path, output_audio, sr, subtype="FLOAT")
+            output_path = store_dir / f"{path.stem}_{output_id}{suffix}"
+            sf.write(output_path, output_audio, sr, subtype=subtype)
             _append_output(
                 outputs,
                 input_path=path,
@@ -177,8 +205,8 @@ def run_folder(model, args, config, device, verbose: bool = False) -> OutputMani
 
             instrumental = original_mix - vocals_output
 
-            instrumental_path = store_dir / f"{path.stem}_instrumental.wav"
-            sf.write(instrumental_path, instrumental, sr, subtype="FLOAT")
+            instrumental_path = store_dir / f"{path.stem}_instrumental{suffix}"
+            sf.write(instrumental_path, instrumental, sr, subtype=subtype)
             _append_output(
                 outputs,
                 input_path=path,
@@ -209,6 +237,10 @@ def proc_folder(args) -> OutputManifest:
     parser.add_argument("--store_dir", type=Path, default=Path("outputs"), help="path to store model outputs")
     parser.add_argument("--device", type=str, default=None, help="torch device string, defaults to auto")
     parser.add_argument("--device_ids", nargs='+', type=int, help='optional list of gpu ids for DataParallel')
+    parser.add_argument("--output_format", type=str, default=DEFAULT_OUTPUT_FORMAT,
+                        choices=sorted(_OUTPUT_FORMAT_WRITERS),
+                        help="output file format/subtype for written stems "
+                             f"(default: {DEFAULT_OUTPUT_FORMAT})")
     if args is None:
         args = parser.parse_args()
     elif isinstance(args, argparse.Namespace):
@@ -237,7 +269,10 @@ def proc_folder(args) -> OutputManifest:
     else:
         model = model.to(device)
 
-    return run_folder(model, args, config, device, verbose=False)
+    return run_folder(
+        model, args, config, device, verbose=False,
+        output_format=getattr(args, "output_format", DEFAULT_OUTPUT_FORMAT),
+    )
 
 
 def _resolve_model_assets(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:

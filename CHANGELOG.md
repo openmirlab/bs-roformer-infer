@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.1.6] - 2026-08-01
+
+### Added
+- **`output_format` parameter on `run_folder`/`BSRoformerSession.infer`/`separate_folder`**
+  (default: `"wav_float32"`, unchanged behavior). Accepts `"wav_float32"` (`.wav`,
+  `subtype="FLOAT"`, today's behavior), `"wav_s16"` (`.wav`, `subtype="PCM_16"`), or
+  `"flac16"` (`.flac`, `subtype="PCM_16"` -- FLAC has no float subtype in
+  soundfile/libsndfile, by design, not a limitation). The CLI gained a matching
+  `--output_format` flag (same default, same choices). Single source of truth for the
+  suffix/subtype mapping is `inference._OUTPUT_FORMAT_WRITERS`.
+
 ## [0.1.5] - 2026-07-12
 
 Re-hosted the 9 registry models whose TRvlvr fallback URLs were dead (404,
