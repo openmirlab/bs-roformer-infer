@@ -15,6 +15,7 @@ from argparse import Namespace
 from pathlib import Path
 
 import numpy as np
+import pytest
 from ml_collections import ConfigDict
 
 import bs_roformer.inference as inference_module
@@ -146,6 +147,75 @@ def test_run_folder_returns_manifest_for_every_written_output(monkeypatch, tmp_p
     )
 
 
+def test_run_folder_output_format_flac16_writes_pcm16_flac_paths(monkeypatch, tmp_path):
+    input_dir = tmp_path / "inputs"
+    input_dir.mkdir()
+    alpha = input_dir / "alpha.wav"
+    alpha.write_bytes(b"")
+
+    alpha_mix = np.array([[10.0, 20.0], [30.0, 40.0]], dtype=np.float32)
+    writes: list[tuple[Path, str]] = []
+
+    def fake_read(path):
+        return alpha_mix, 44100
+
+    def fake_write(path, data, sr, subtype):
+        target = Path(path)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(b"stub")
+        writes.append((target, subtype))
+
+    def fake_demix_track(config, model, mixture, device, first_chunk_time):
+        sources = {}
+        for index, output_id in enumerate(config.training.instruments, start=1):
+            sources[output_id] = np.full(mixture.shape, float(index), dtype=np.float32)
+        return sources, 0.01 if first_chunk_time is None else first_chunk_time
+
+    monkeypatch.setattr(inference_module.sf, "read", fake_read)
+    monkeypatch.setattr(inference_module.sf, "write", fake_write)
+    # demix_track is called from the Torch backend, which is the one place the
+    # chunked inference now lives -- patch it there, not at a re-export.
+    from bs_roformer.backends import torch_backend as torch_backend_module
+
+    monkeypatch.setattr(torch_backend_module, "demix_track", fake_demix_track)
+    monkeypatch.setattr(inference_module.time, "sleep", lambda seconds: None)
+
+    manifest = inference_module.run_folder(
+        _DummyModel(),
+        Namespace(input_folder=input_dir, store_dir=tmp_path / "outputs"),
+        _multi_stem_config(),
+        device="cpu",
+        verbose=True,
+        output_format="flac16",
+    )
+
+    assert all(Path(output.output_path).suffix == ".flac" for output in manifest.outputs)
+    assert writes and all(subtype == "PCM_16" for _, subtype in writes)
+    assert all(path.suffix == ".flac" for path, _ in writes)
+
+
+def test_run_folder_rejects_unsupported_output_format(monkeypatch, tmp_path):
+    input_dir = tmp_path / "inputs"
+    input_dir.mkdir()
+    (input_dir / "alpha.wav").write_bytes(b"")
+    monkeypatch.setattr(inference_module.sf, "read", lambda path: (np.zeros((2, 2)), 44100))
+
+    from bs_roformer.backends import torch_backend as torch_backend_module
+
+    monkeypatch.setattr(
+        torch_backend_module, "demix_track", lambda *a, **k: pytest.fail("must not run")
+    )
+
+    with pytest.raises(ValueError, match="unsupported output_format"):
+        inference_module.run_folder(
+            _DummyModel(),
+            Namespace(input_folder=input_dir, store_dir=tmp_path / "outputs"),
+            _multi_stem_config(),
+            device="cpu",
+            output_format="mp3",
+        )
+
+
 def test_session_infer_returns_folder_run_manifest(monkeypatch, tmp_path):
     expected = OutputManifest(
         outputs=(
@@ -159,11 +229,14 @@ def test_session_infer_returns_folder_run_manifest(monkeypatch, tmp_path):
 
     # The session drives the backend-agnostic folder run, handing it the resolved
     # backend's separate() -- so that is the seam this asserts against.
-    def fake_separate_folder_with(separate, args, config, verbose=False):
+    def fake_separate_folder_with(
+        separate, args, config, verbose=False, output_format="wav_float32"
+    ):
         assert callable(separate)
         assert args.input_folder == tmp_path / "inputs"
         assert args.store_dir == tmp_path / "outputs"
         assert verbose is True
+        assert output_format == "wav_float32"
         return expected
 
     monkeypatch.setattr(inference_module, "separate_folder_with", fake_separate_folder_with)

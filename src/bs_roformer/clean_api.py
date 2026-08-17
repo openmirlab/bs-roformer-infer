@@ -140,7 +140,7 @@ class BSRoformerSession:
         self.device = target
         self._backend = get_backend("torch")(self._model, self._config, target)
 
-    def infer(self, input_folder, *, store_dir="outputs", verbose=False):
+    def infer(self, input_folder, *, store_dir="outputs", verbose=False, output_format="wav_float32"):
         if self._status != "ready" or self._model is None:
             raise RuntimeError("BSRoformerSession must be ready; call load() before infer()")
         from argparse import Namespace
@@ -152,6 +152,7 @@ class BSRoformerSession:
             Namespace(input_folder=Path(input_folder), store_dir=Path(store_dir)),
             self._config,
             verbose=verbose,
+            output_format=output_format,
         )
 
     def _ensure_backend(self):
@@ -239,8 +240,10 @@ class BSRoformerSeparator:
             self._session = BSRoformerSession(**self._kwargs).load()
         return self._session
 
-    def __call__(self, input_folder, *, store_dir="outputs", verbose=False):
-        return self.session.infer(input_folder, store_dir=store_dir, verbose=verbose)
+    def __call__(self, input_folder, *, store_dir="outputs", verbose=False, output_format="wav_float32"):
+        return self.session.infer(
+            input_folder, store_dir=store_dir, verbose=verbose, output_format=output_format
+        )
 
 
 def separate_folder(input_folder, **kwargs):
@@ -259,4 +262,5 @@ def separate_folder(input_folder, **kwargs):
     return BSRoformerSeparator(**session_kwargs).session.infer(
         input_folder,
         store_dir=kwargs.get("store_dir", "outputs"),
+        output_format=kwargs.get("output_format", "wav_float32"),
     )
