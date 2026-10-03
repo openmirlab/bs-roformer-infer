@@ -7,6 +7,21 @@
 - Corrected the default BS-RoFormer-SW checkpoint metadata: the weight license
   and trainer provenance are unverified. The stable model slug is unchanged.
 
+### Added
+
+- Pinned the default SW checkpoint's complete six-stem outputs from pristine
+  historical BS-RoFormer for FP32 and CUDA autocast, plus a separate baseline
+  of all seven public WAV outputs across the default chunk boundary. Real
+  model tests require the official cached weights and recorded GPU profile;
+  hosted CI checks fixture metadata without bundling weights.
+
+### Fixed
+
+- Restored declared Python 3.10 support for the checkpoint registry by
+  depending on `tomli` below Python 3.11 and using it when `tomllib` is absent.
+- The PR test workflow now keys the uv cache from committed `pyproject.toml`;
+  its former default expected an absent `uv.lock` and stopped before tests.
+
 ### Removed
 
 - Experimental MLX (Apple Silicon) backend and MPS device support were removed

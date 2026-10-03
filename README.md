@@ -164,6 +164,17 @@ model.load_state_dict(torch.load(ckpt_path, map_location="cpu"))
 
 **BS-RoFormer-SW** (`roformer-model-bs-roformer-sw-by-jarredou`) is the recommended default model for audio source separation. It supports **6-stem separation** (vocals, drums, bass, guitar, piano, other). The slug preserves the historical jarredou release name; we have not verified who trained the weights. The [current checkpoint mirror](https://huggingface.co/enerjazzer/BS-ROFO-SW-Fixed) labels their license **unknown**, and the [ONNX export's model card](https://huggingface.co/elicwhite/bs-roformer-sw-6stem-onnx) says the rehoster did not train them and has no trainer provenance. The architecture and conversion code licenses do not establish a license for these pretrained weights. Do not treat this package's MIT code license as a grant for commercial use of this checkpoint.
 
+The real-weight regression in `tests/test_original_default_golden.py` compares
+the complete six-stem FP32 and CUDA-autocast output with pristine
+`lucidrains/BS-RoFormer@93a07dd`, using the SHA-256-pinned default checkpoint
+and config. A separate 13.4-second fixture verifies all seven public-session
+WAV outputs, including the derived instrumental stem, across the default
+chunk boundary. This second fixture records this package's existing session
+pipeline; upstream provides the model architecture, not that wrapper. Run
+`pytest -m realweights` with the official assets cached and the recorded
+Torch/CUDA profile to execute the real model tests. Hosted CPU CI validates
+fixture metadata; no checkpoint bytes are committed.
+
 ```python
 from bs_roformer import DEFAULT_MODEL
 print(DEFAULT_MODEL)  # "roformer-model-bs-roformer-sw-by-jarredou"

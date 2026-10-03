@@ -1,0 +1,49 @@
+{
+  "upstream_revision": "93a07dda7867d4acd8f5bd49ae3f33e1fcbfd8cf",
+  "upstream_model_sha256": "39cd515a7fcdd9a87dff1fedd5e9f755986943fff33cc260863c2eb8416530d8",
+  "upstream_attention_sha256": "50f33aad57e205d812004167626a519b3febad9ca0394e756585284054634359",
+  "checkpoint_sha256": "24e7d35ee9c64415673d3fd33e06a67cac2c103c5df6267ba1576459c775916e",
+  "config_sha256": "f9fada9f94e5ba2d2e4600196299459294bc5f532b314c209cc156ac63e4329b",
+  "torch": "2.9.1+cu128",
+  "cuda_device": "NVIDIA GeForce RTX 4090",
+  "cuda_capability": [
+    8,
+    9
+  ],
+  "seed": 12345,
+  "sample_rate": 44100,
+  "waveform_shape": [
+    1,
+    2,
+    88200
+  ],
+  "output_shape": [
+    1,
+    6,
+    2,
+    88064
+  ],
+  "public_baseline": {
+    "kind": "existing port session, not upstream inference wrapper",
+    "input_shape": [
+      590940,
+      2
+    ],
+    "output_ids": [
+      "bass",
+      "drums",
+      "guitar",
+      "instrumental",
+      "other",
+      "piano",
+      "vocals"
+    ],
+    "output_shape": [
+      590940,
+      2
+    ],
+    "sample_rate": 44100,
+    "torch": "2.9.1+cu128",
+    "cuda_device": "NVIDIA GeForce RTX 4090"
+  }
+}
