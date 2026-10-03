@@ -162,7 +162,7 @@ model.load_state_dict(torch.load(ckpt_path, map_location="cpu"))
 
 ## Recommended Model
 
-**BS-RoFormer-SW** (`roformer-model-bs-roformer-sw-by-jarredou`) by jarredou is the recommended default model for audio source separation. It supports **6-stem separation** (vocals, drums, bass, guitar, piano, other) and provides excellent quality for production workflows.
+**BS-RoFormer-SW** (`roformer-model-bs-roformer-sw-by-jarredou`) is the recommended default model for audio source separation. It supports **6-stem separation** (vocals, drums, bass, guitar, piano, other). The slug preserves the historical jarredou release name; we have not verified who trained the weights. The [current checkpoint mirror](https://huggingface.co/enerjazzer/BS-ROFO-SW-Fixed) labels their license **unknown**, and the [ONNX export's model card](https://huggingface.co/elicwhite/bs-roformer-sw-6stem-onnx) says the rehoster did not train them and has no trainer provenance. The architecture and conversion code licenses do not establish a license for these pretrained weights. Do not treat this package's MIT code license as a grant for commercial use of this checkpoint.
 
 ```python
 from bs_roformer import DEFAULT_MODEL

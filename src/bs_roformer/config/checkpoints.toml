@@ -92,10 +92,10 @@ size = 1847
 [models.roformer-model-bs-roformer-sw-by-jarredou]
 name = "Roformer Model: BS Roformer SW by jarredou"
 category = "multi-stem"
-license = "CC-BY-NC-SA-4.0"
-provenance = "Migrated from package data JSON"
-source_revision = "2026-07-12"
-updated_at = "2026-07-12"
+license = "unknown"
+provenance = "The enerjazzer mirror labels the weight license unknown; the ONNX exporter reports that the rehoster did not train the model and has no trainer provenance. See https://huggingface.co/enerjazzer/BS-ROFO-SW-Fixed and https://huggingface.co/elicwhite/bs-roformer-sw-6stem-onnx"
+source_revision = "a443a2985534b3bc815ef54a5d446c6a0390f974"
+updated_at = "2026-10-04"
 
 [[models.roformer-model-bs-roformer-sw-by-jarredou.artifacts]]
 kind = "checkpoint"
