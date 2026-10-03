@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Corrected
+
+- Corrected the default BS-RoFormer-SW checkpoint metadata: the weight license
+  and trainer provenance are unverified. The stable model slug is unchanged.
+
 ### Added
 
 - Pinned the default SW checkpoint's complete six-stem outputs from pristine

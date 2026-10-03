@@ -2,6 +2,12 @@
 
 ## Scope
 
+The default BS-RoFormer-SW checkpoint has **unknown** weight licensing and an
+unverified trainer. Its stable slug retains `by-jarredou` as a historical
+release label, not verified authorship. The checkpoint TOML and README record
+the current mirror and ONNX exporter evidence; do not infer weight permissions
+from this package's MIT code license or another rehost's label.
+
 bs-roformer-infer is an inference-only package wrapping BS-RoFormer
 (Band-Split RoPE Transformer) music source separation. It reprovides the
 [lucidrains/BS-RoFormer](https://github.com/lucidrains/BS-RoFormer)
