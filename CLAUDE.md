@@ -211,3 +211,7 @@ uv run ruff check .      # lint
 ## OpenMIRLab inference contract
 
 This package is inference-only. Its clean facade provides an explicit lifecycle session (load, ready-only infer, release, close, status, cache_info, and context-manager support) while retaining legacy one-shot entry points for compatibility. Package-owned checkpoint configuration records URLs and integrity metadata; generic checkpoint overrides do not require code changes.
+
+## Distribution policy (2026-10-05)
+
+Install the current source from `https://github.com/openmirlab/bs-roformer-infer`. GitHub release workflows verify and build distributions but do not upload to PyPI. Existing PyPI versions, where any exist, are historical snapshots. Update installation examples to use Git when changing this package.

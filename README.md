@@ -1,5 +1,8 @@
 # BS-RoFormer-Infer
 
+> **Current installation:** `pip install "bs-roformer-infer @ git+https://github.com/openmirlab/bs-roformer-infer.git"`
+> OpenMIRLab no longer publishes new versions to PyPI. Any existing PyPI releases are historical snapshots.
+
 **Production-ready, inference-only toolkit for Band-Split RoPE Transformer audio source separation**
 
 BS-RoFormer-Infer provides a clean, lightweight API for running music source separation inference using Band-Split RoFormer models with automatic checkpoint management.
@@ -37,7 +40,6 @@ read by production registry/download resolution.
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![PyPI](https://img.shields.io/pypi/v/bs-roformer-infer)](https://pypi.org/project/bs-roformer-infer/)
 
 ---
 
@@ -124,10 +126,10 @@ management with sha256 verification; a standalone download CLI.
 
 ```bash
 # Using pip
-pip install bs-roformer-infer
+pip install "bs-roformer-infer @ git+https://github.com/openmirlab/bs-roformer-infer.git"
 
 # Using UV (recommended)
-uv pip install bs-roformer-infer
+uv pip install "bs-roformer-infer @ git+https://github.com/openmirlab/bs-roformer-infer.git"
 ```
 
 ## Quick Start
