@@ -7,41 +7,9 @@
 
 BS-RoFormer-Infer provides a clean, lightweight API for running music source separation inference using Band-Split RoFormer models with automatic checkpoint management.
 
-## Devices
-
-```python
-from bs_roformer import BSRoformerSession
-
-with BSRoformerSession(device="cuda") as session:
-    session.infer("songs/", store_dir="stems/")
-```
-
-```bash
-bs-roformer-infer --input_folder songs --device cuda
-```
-
-`device` accepts `None` (legacy default), `auto`, `cpu`, `cuda`, or `cuda:N`.
-Legacy `None` and explicit `auto` select CUDA when available, otherwise CPU.
-An explicitly requested accelerator that is unavailable raises rather than
-being silently downgraded.
-
-This package is Torch/CUDA/CPU only. Apple Silicon (MPS) and MLX support were
-removed before release (org decision 2026-09-14, out of scope for openmirlab);
-`device="mps"` raises a clear `ValueError` naming why.
-
-## Lifecycle
-
-`BSRoformerSession.release()` permits a later reload, while `close()` is terminal.
-Loading and `cache_info()` use the same checkpoint resolver; its package-owned
-`config/checkpoints.toml` remains the authoritative URL/integrity metadata.
-Legacy JSON files remain only as transition compatibility fixtures and are not
-read by production registry/download resolution.
-
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
----
 
 ## Why This Exists
 
@@ -61,7 +29,7 @@ the default BS-RoFormer-SW checkpoint was deleted (discovered 2026-06), and
 
 BS-RoFormer-Infer reprovides the architecture as a clean, pip-installable,
 inference-only package: no training code, no GUI dependency, a versioned
-model registry that can be repointed at a new host by editing one JSON file
+model registry that can be repointed at a new host by editing one TOML file
 (no code change), and sha256-verified auto-download so a corrupted or
 tampered checkpoint is never silently loaded.
 
@@ -143,6 +111,56 @@ bs-roformer-infer --input_folder ./songs --store_dir ./outputs
 Every WAV inside `input_folder` produces separated stems (vocals, drums, bass, guitar, piano, other) plus `*_instrumental.wav`. Explicit `--config_path`/`--model_path` arguments still work and skip auto-resolution entirely.
 
 ---
+
+## Devices
+
+```python
+from bs_roformer import BSRoformerSession
+
+with BSRoformerSession(device="cuda") as session:
+    session.infer("songs/", store_dir="stems/")
+```
+
+```bash
+bs-roformer-infer --input_folder songs --device cuda
+```
+
+`device` accepts `None` (legacy default), `auto`, `cpu`, `cuda`, or `cuda:N`.
+Legacy `None` and explicit `auto` select CUDA when available, otherwise CPU.
+An explicitly requested accelerator that is unavailable raises rather than
+being silently downgraded.
+
+This package is Torch/CUDA/CPU only. Apple Silicon (MPS) and MLX support were
+removed before release (org decision 2026-09-14, out of scope for openmirlab);
+`device="mps"` raises a clear `ValueError` naming why.
+
+## Lifecycle
+
+`BSRoformerSession.release()` permits a later reload, while `close()` is terminal.
+Loading and `cache_info()` use the same checkpoint resolver; its package-owned
+`config/checkpoints.toml` remains the authoritative URL/integrity metadata.
+Legacy JSON files remain only as transition compatibility fixtures and are not
+read by production registry/download resolution.
+
+## Explicit lifecycle API
+
+For applications that need controlled model lifetime, use `BSRoformerSession`:
+
+```python
+from bs_roformer import BSRoformerSession
+with BSRoformerSession() as session:
+    session.infer("input_folder", store_dir="outputs")
+```
+
+`load()` downloads and verifies weights, `infer()` requires a ready session,
+`release()` frees memory while retaining the disk cache, and `cache_info()`
+reports the selected checkpoint. Existing CLI and downloader entry points remain
+available and lazy. Checkpoint URLs and SHA-256 metadata live in the package-owned
+`config/checkpoints.toml` and can be overridden with explicit paths or metadata.
+
+## OpenMIRLab inference contract
+
+This package is inference-only. The public clean facade exposes an explicit lifecycle session (`load`, ready-only `infer`, `release`, `close`, `status`, `cache_info`, and context-manager support) while retaining the legacy one-shot API for compatibility. Checkpoint URLs and integrity metadata are package-owned in `config/checkpoints.toml`; callers may provide a generic checkpoint override without changing package code.
 
 ## Python API
 
@@ -382,24 +400,3 @@ This project includes code and configurations adapted from:
 
 For issues and questions:
 - **GitHub Issues**: [github.com/openmirlab/bs-roformer-infer/issues](https://github.com/openmirlab/bs-roformer-infer/issues)
-
----
-## Explicit lifecycle API
-
-For applications that need controlled model lifetime, use `BSRoformerSession`:
-
-```python
-from bs_roformer import BSRoformerSession
-with BSRoformerSession() as session:
-    session.infer("input_folder", store_dir="outputs")
-```
-
-`load()` downloads and verifies weights, `infer()` requires a ready session,
-`release()` frees memory while retaining the disk cache, and `cache_info()`
-reports the selected checkpoint. Existing CLI and downloader entry points remain
-available and lazy. Checkpoint URLs and SHA-256 metadata live in the package-owned
-`config/checkpoints.toml` and can be overridden with explicit paths or metadata.
-
-## OpenMIRLab inference contract
-
-This package is inference-only. The public clean facade exposes an explicit lifecycle session (`load`, ready-only `infer`, `release`, `close`, `status`, `cache_info`, and context-manager support) while retaining the legacy one-shot API for compatibility. Checkpoint URLs and integrity metadata are package-owned in `config/checkpoints.toml`; callers may provide a generic checkpoint override without changing package code.
