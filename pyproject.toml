@@ -10,7 +10,16 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [
-    { name = "OpenMIRLab", email = "bernie40916@gmail.com" }
+    { name = "Phil Wang" },
+    { name = "Andrew Beveridge" },
+    { name = "Wei-Tsung Lu" },
+    { name = "Ju-Chiang Wang" },
+    { name = "Qiuqiang Kong" },
+    { name = "Yun-Ning Hung" },
+    { name = "Paul" },
+]
+maintainers = [
+    { name = "OpenMIRLab", email = "bernie40916@gmail.com" },
 ]
 keywords = ["audio", "source-separation", "roformer", "bs-roformer", "pytorch", "inference"]
 classifiers = [

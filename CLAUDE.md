@@ -13,6 +13,9 @@ bs-roformer-infer is an inference-only package wrapping BS-RoFormer
 [lucidrains/BS-RoFormer](https://github.com/lucidrains/BS-RoFormer)
 architecture as a pip-installable, PyTorch-based CLI + Python API with
 automatic checkpoint management: no training code, no UVR GUI dependency.
+Package metadata credits the upstream implementation and configuration
+authors, the paper authors, and this package's contributor in `authors`;
+OpenMIRLab is listed as `maintainers`.
 
 Devices preserve legacy `None` auto-selection and also accept explicit `auto`,
 `cpu`, `cuda`, and `cuda:N`; an explicitly requested accelerator that is

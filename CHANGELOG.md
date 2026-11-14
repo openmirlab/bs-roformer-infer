@@ -3,6 +3,8 @@
 ## Unreleased — distribution policy
 
 - Stop publishing new versions to PyPI; GitHub source is the maintained installation channel. GitHub release CI continues to run verification and build checks.
+- Credit upstream implementation, configuration, and research authors in
+  package metadata; list OpenMIRLab as maintainer.
 
 ## Unreleased
 
